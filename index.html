@@ -421,6 +421,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <span class="hint">🔒 Key 仅存储在本设备浏览器中，不会上传到任何服务器。</span>
       </div>
     </div>
+    <div class="seg-lbl" style="margin-top:22px">主动打招呼频率</div>
+    <div class="seg" role="group" id="freq-seg">
+      <button class="seg-b" data-freq="off">关闭</button>
+      <button class="seg-b" data-freq="low">低 (~5分钟)</button>
+      <button class="seg-b on" data-freq="mid">中 (~3分钟)</button>
+      <button class="seg-b" data-freq="high">高 (~90秒)</button>
+    </div>
+    <span class="hint" style="margin-top:6px;display:block">专注时建议选"低"或"关闭"</span>
+
     <button id="save-btn">保存并连接 ✦</button>
   </div>
 </div>
@@ -2023,8 +2032,8 @@ let busy=false;
 
 function load(){
   try{const s=JSON.parse(localStorage.getItem('apk')||'{}');
-    return{p:s.p||'anthropic',k:s.k||'',m:s.m||'',b:s.b||'',proxy:!!s.proxy};}
-  catch{return{p:'anthropic',k:'',m:'',b:'',proxy:false};}
+    return{p:s.p||'anthropic',k:s.k||'',m:s.m||'',b:s.b||'',proxy:!!s.proxy,freq:s.freq||'mid'};}
+  catch{return{p:'anthropic',k:'',m:'',b:'',proxy:false,freq:'mid'};}
 }
 function save(){localStorage.setItem('apk',JSON.stringify(cfg));}
 function hasKey(){return!!cfg.k;}
@@ -2045,10 +2054,22 @@ let curP=cfg.p;
 function openSettings(){
   fKey.value=cfg.k;fModel.value=cfg.m;fBase.value=cfg.b;
   fProxy.checked=!!cfg.proxy;
-  curP=cfg.p;syncSeg();updateStatus();
+  curP=cfg.p;syncSeg();syncFreq();updateStatus();
   overlay.classList.add('open');panel.classList.add('open');
 }
 function closeSettings(){overlay.classList.remove('open');panel.classList.remove('open');}
+function syncFreq(){
+  document.querySelectorAll('#freq-seg .seg-b').forEach(b=>{
+    b.classList.toggle('on', b.dataset.freq===(cfg.freq||'mid'));
+  });
+}
+document.querySelectorAll('#freq-seg .seg-b').forEach(b=>{
+  b.addEventListener('click',()=>{
+    cfg.freq=b.dataset.freq;
+    document.querySelectorAll('#freq-seg .seg-b').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+  });
+});
 function syncSeg(){
   segBtns.forEach(b=>b.classList.toggle('on',b.dataset.p===curP));
   frBase.style.display=curP==='openai'?'flex':'none';
@@ -2065,7 +2086,7 @@ document.getElementById('s-close').addEventListener('click',closeSettings);
 overlay.addEventListener('click',closeSettings);
 document.getElementById('save-btn').addEventListener('click',()=>{
   cfg={p:curP,k:fKey.value.trim(),m:fModel.value.trim(),
-    b:fBase.value.trim().replace(/\/+$/,''),proxy:fProxy.checked};
+    b:fBase.value.trim().replace(/\/+$/,''),proxy:fProxy.checked,freq:cfg.freq||'mid'};
   save();history=[];closeSettings();
   appendMsg('pet',hasKey()?'设置好了 ✦\n快来跟我聊天吧！':'好的，我在这里呢~ 🌸');
   updateStatus();
@@ -2435,20 +2456,24 @@ function checkinMsg(){
   }
 }
 
-// Periodic 20-min check-in
+// Periodic check-in (respects freq setting)
 setInterval(()=>{
-  if(!busy) appendMsg('pet',checkinMsg());
+  if(!busy && (cfg.freq||'mid')!=='off') appendMsg('pet',checkinMsg());
 },CHECK_INTERVAL);
 
-// Idle: mix FALLBACK encouragement (60%) + ADHD tips (40%)
+// Idle: frequency driven by cfg.freq
+const FREQ_MS={off:null, low:4*60*1000, mid:2.5*60*1000, high:90*1000};
+const FREQ_JITTER={off:0, low:2*60*1000, mid:60*1000, high:60*1000};
 function scheduleIdle(){
+  const base=FREQ_MS[cfg.freq||'mid'];
+  if(base===null){setTimeout(scheduleIdle,30*1000);return;} // off: re-check every 30s
   setTimeout(()=>{
-    if(!busy){
+    if(!busy && (cfg.freq||'mid')!=='off'){
       const msg=Math.random()<0.4?rand(ADHD_TIPS):rand(FALLBACK);
       appendMsg('pet',msg);
     }
     scheduleIdle();
-  },90*1000+Math.random()*90*1000);
+  },base+Math.random()*FREQ_JITTER[cfg.freq||'mid']);
 }
 scheduleIdle();
 

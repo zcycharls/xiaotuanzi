@@ -454,12 +454,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <radialGradient id="eyeG" cx="34%" cy="28%" r="60%">
       <stop offset="0%" stop-color="#6b4020"/><stop offset="100%" stop-color="#150800"/>
     </radialGradient>
-    <radialGradient id="armG" cx="40%" cy="30%" r="65%">
-      <stop offset="0%" stop-color="#d0d0d0"/><stop offset="100%" stop-color="#888"/>
-    </radialGradient>
-    <radialGradient id="handG" cx="40%" cy="30%" r="60%">
-      <stop offset="0%" stop-color="#e0e0e0"/><stop offset="100%" stop-color="#aaa"/>
-    </radialGradient>
     <radialGradient id="shadowG" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="rgba(50,50,50,.2)"/><stop offset="100%" stop-color="rgba(50,50,50,0)"/>
     </radialGradient>
@@ -2337,9 +2331,9 @@ function setHappy(on){
 function petReact(){
   pw.classList.remove('jumping','blinking');
   void pw.offsetWidth;
-  pw.classList.add('jumping','blinking');
+  pw.classList.add('jumping');
   setTimeout(()=>pw.classList.remove('jumping'),600);
-  setTimeout(()=>pw.classList.remove('blinking'),450);
+  
 }
 
 /* ════════ PET MOOD (SVG mouth) ════════ */

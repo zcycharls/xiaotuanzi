@@ -134,10 +134,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 @keyframes breathe-svg{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.03) scaleX(.98)}}
 
 /* eye blink */
-#pet-eye-l,#pet-eye-r{animation:blink-svg 5s ease-in-out infinite;transform-origin:center}
-#pet-eye-l{transform-box:fill-box}
-#pet-eye-r{transform-box:fill-box}
+#pet-eye-l,#pet-eye-r{
+  animation:blink-svg 5s ease-in-out infinite;
+  transform-box:fill-box;
+  transform-origin:center center}
 @keyframes blink-svg{0%,44%,56%,100%{transform:scaleY(1)}50%{transform:scaleY(.07)}}
+#pw.blinking #pet-eye-l,#pw.blinking #pet-eye-r{
+  animation:pet-blink-click .4s ease-in-out;
+  transform-box:fill-box;
+  transform-origin:center center}
+@keyframes pet-blink-click{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.05)}}
 
 /* paw wave */
 #pet-paw-r{animation:paw-wave 3.5s ease-in-out infinite;transform-origin:42px 118px;transform-box:fill-box}
@@ -523,13 +529,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <ellipse cx="82" cy="66" rx="10" ry="6" fill="rgba(255,182,200,.5)"/>
 
     <!-- eyes -->
-    <g id="pet-eye-l" style="transform-origin:46px 57px">
+    <g id="pet-eye-l">
       <ellipse cx="46" cy="57" rx="7" ry="8" fill="#3d2a5c"/>
       <!-- shine -->
       <ellipse cx="43" cy="53" rx="2.5" ry="2.5" fill="white" opacity=".9"/>
       <ellipse cx="49" cy="56" rx="1.2" ry="1.2" fill="white" opacity=".6"/>
     </g>
-    <g id="pet-eye-r" style="transform-origin:74px 57px">
+    <g id="pet-eye-r">
       <ellipse cx="74" cy="57" rx="7" ry="8" fill="#3d2a5c"/>
       <ellipse cx="71" cy="53" rx="2.5" ry="2.5" fill="white" opacity=".9"/>
       <ellipse cx="77" cy="56" rx="1.2" ry="1.2" fill="white" opacity=".6"/>

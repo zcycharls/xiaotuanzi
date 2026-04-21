@@ -293,35 +293,33 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* ═══ POMODORO WIDGET ═══ */
 #pomo-widget{
   flex-shrink:0;border-bottom:1px solid rgba(210,195,255,.35);
-  padding:10px 14px 12px;background:rgba(248,245,255,.6);
-  display:none;flex-direction:column;align-items:center;gap:8px}
+  padding:7px 14px 8px;background:rgba(248,245,255,.6);
+  display:none;flex-direction:column;gap:5px}
 #pomo-widget.open{display:flex}
 
-#pomo-top{display:flex;align-items:baseline;gap:10px;width:100%;justify-content:space-between}
-#pomo-mode{font-size:11px;font-weight:800;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase}
-#pomo-count{font-size:11px;font-weight:700;color:var(--accent)}
-
-#pomo-time{font-size:28px;font-weight:800;color:var(--text-main);
-  letter-spacing:.04em;line-height:1}
-
-#pomo-track{width:100%;height:5px;background:rgba(200,185,245,.3);
-  border-radius:3px;overflow:hidden}
-#pomo-fill{height:100%;background:linear-gradient(90deg,#b39ddb,#7c5cbf);
-  border-radius:3px;width:0%;transition:width .9s linear}
-#pomo-widget.break-mode #pomo-fill{background:linear-gradient(90deg,#a8d8b0,#5baa6e)}
+#pomo-row{display:flex;align-items:center;gap:8px;width:100%}
+#pomo-mode{font-size:11px;font-weight:800;color:var(--text-dim);
+  letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
+#pomo-time{font-size:16px;font-weight:800;color:var(--text-main);
+  letter-spacing:.04em;flex-shrink:0;min-width:44px}
 #pomo-widget.break-mode #pomo-time{color:#3a7a4a}
-
-#pomo-btns{display:flex;gap:8px}
-.pomo-btn{padding:6px 18px;border-radius:20px;border:none;cursor:pointer;
-  font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;
+#pomo-count{font-size:11px;color:var(--accent);flex:1}
+#pomo-btns{display:flex;gap:5px;flex-shrink:0}
+.pomo-btn{padding:4px 12px;border-radius:16px;border:none;cursor:pointer;
+  font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;
   touch-action:manipulation;transition:transform .12s,background .15s}
 .pomo-btn:active{transform:scale(.93)}
 #pomo-start{background:linear-gradient(135deg,#b39ddb,#7c5cbf);color:#fff;
-  box-shadow:0 2px 10px rgba(124,92,191,.25)}
-#pomo-start.running{background:linear-gradient(135deg,#f0a0b0,#d05070);
-  box-shadow:0 2px 10px rgba(200,60,90,.22)}
+  box-shadow:0 2px 8px rgba(124,92,191,.22)}
+#pomo-start.running{background:linear-gradient(135deg,#f0a0b0,#d05070)}
 #pomo-reset{background:rgba(240,235,255,.9);color:var(--text-dim);
   border:1.5px solid rgba(210,195,255,.7)}
+
+#pomo-track{width:100%;height:3px;background:rgba(200,185,245,.25);
+  border-radius:2px;overflow:hidden}
+#pomo-fill{height:100%;background:linear-gradient(90deg,#b39ddb,#7c5cbf);
+  border-radius:2px;width:0%;transition:width .9s linear}
+#pomo-widget.break-mode #pomo-fill{background:linear-gradient(90deg,#a8d8b0,#5baa6e)}
 
 /* header actions */
 #dlg-header-btns{display:flex;align-items:center;gap:6px}
@@ -482,16 +480,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
   <!-- Pomodoro widget -->
   <div id="pomo-widget">
-    <div id="pomo-top">
+    <div id="pomo-row">
       <span id="pomo-mode">专注</span>
+      <span id="pomo-time">25:00</span>
       <span id="pomo-count">🍅 × 0</span>
+      <div id="pomo-btns">
+        <button class="pomo-btn" id="pomo-start">开始</button>
+        <button class="pomo-btn" id="pomo-reset">重置</button>
+      </div>
     </div>
-    <div id="pomo-time">25:00</div>
     <div id="pomo-track"><div id="pomo-fill"></div></div>
-    <div id="pomo-btns">
-      <button class="pomo-btn" id="pomo-start">开始</button>
-      <button class="pomo-btn" id="pomo-reset">重置</button>
-    </div>
   </div>
 
   <div id="dlg-msgs"></div>

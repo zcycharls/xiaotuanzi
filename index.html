@@ -130,7 +130,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 @keyframes pet-blink-click{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.05)}}
 
 /* breathe on SVG group */
-#pet-body-grp{animation:breathe-svg 3.6s ease-in-out infinite;transform-origin:65px 114px;transform:rotate(12deg) translateX(-8px)}
+#pet-body-grp{animation:breathe-svg 3.6s ease-in-out infinite;transform-origin:65px 114px;transform:rotate(10deg) translateX(-12px)}
 @keyframes breathe-svg{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.03) scaleX(.98)}}
 
 /* eye blink */
@@ -1578,13 +1578,19 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <path d="M76.4,115.8 Q79.3,119.5 83.9,118.1" stroke="#eee" stroke-width="0.8" stroke-linecap="round" fill="none" opacity="0.72"/>
 <path d="M76.0,116.7 Q80.0,118.4 84.0,120.2" stroke="#eee" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.65"/></g>
 
-    <!-- FEET (spread open, sitting) -->
-    <!-- left foot: angled outward-left -->
-    <ellipse cx="30" cy="148" rx="17" ry="11" fill="white" filter="url(#furEdgeSm)"
-             transform="rotate(-25,30,148)"/>
-    <!-- right foot: angled outward-right -->
-    <ellipse cx="100" cy="148" rx="17" ry="11" fill="white" filter="url(#furEdgeSm)"
-             transform="rotate(25,100,148)"/>
+    <!-- FEET (wide spread sitting) -->
+    <!-- left leg -->
+    <ellipse cx="34" cy="138" rx="10" ry="18" fill="url(#armG)"
+             transform="rotate(-35,34,138)" filter="url(#furEdgeSm)"/>
+    <!-- left foot -->
+    <ellipse cx="20" cy="152" rx="17" ry="11" fill="white" filter="url(#furEdgeSm)"
+             transform="rotate(-40,20,152)"/>
+    <!-- right leg -->
+    <ellipse cx="96" cy="138" rx="10" ry="18" fill="url(#armG)"
+             transform="rotate(35,96,138)" filter="url(#furEdgeSm)"/>
+    <!-- right foot -->
+    <ellipse cx="110" cy="152" rx="17" ry="11" fill="white" filter="url(#furEdgeSm)"
+             transform="rotate(40,110,152)"/>
 
     <!-- LEFT ARM: single curved path from neck to clasped paws -->
     <g id="pet-paw-l">
@@ -1617,7 +1623,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     </g>
 
     <!-- HEAD (tilted up) -->
-    <g transform="rotate(-35,65,66)">
+    <g transform="rotate(-45,65,66)">
     <!-- HEAD -->
     <ellipse cx="65" cy="66" rx="36" ry="34" fill="url(#faceG)" filter="url(#furEdge)"/>
     <g opacity="0.82"><path d="M55.0,65.5 Q48.3,62.7 41.5,65.2" stroke="#ccc" stroke-width="0.8" stroke-linecap="round" fill="none" opacity="0.94"/>

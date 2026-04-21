@@ -114,7 +114,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 #save-btn:active{transform:scale(.97)}
 
 /* ═══ PET ═══ */
-#pw{position:fixed;width:130px;height:160px;cursor:grab;z-index:10;transition:filter .2s}
+#pw{position:fixed;width:140px;height:165px;cursor:grab;z-index:10;transition:filter .2s}
 #pw:active{cursor:grabbing}
 #pw.happy{filter:drop-shadow(0 0 20px rgba(180,150,255,.7))}
 #pw.thinking{filter:drop-shadow(0 0 16px rgba(130,190,255,.65))}
@@ -130,7 +130,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 @keyframes pet-blink-click{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.05)}}
 
 /* breathe on SVG group */
-#pet-body-grp{animation:breathe-svg 3.6s ease-in-out infinite;transform-origin:65px 114px}
+#pet-body-grp{animation:breathe-svg 3.6s ease-in-out infinite;transform-origin:65px 114px;transform:rotate(12deg) translateX(-8px)}
 @keyframes breathe-svg{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.03) scaleX(.98)}}
 
 /* eye blink */
@@ -436,7 +436,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 <!-- Pet -->
 <div id="pw">
-<svg id="pet-svg" viewBox="0 0 130 160" xmlns="http://www.w3.org/2000/svg" width="130" height="160">
+<svg id="pet-svg" viewBox="0 0 140 165" xmlns="http://www.w3.org/2000/svg" width="140" height="165">
   <defs>
     <radialGradient id="bodyG" cx="42%" cy="35%" r="65%">
       <stop offset="0%" stop-color="#d2d2d2"/><stop offset="100%" stop-color="#7a7a7a"/>
@@ -1578,9 +1578,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <path d="M76.4,115.8 Q79.3,119.5 83.9,118.1" stroke="#eee" stroke-width="0.8" stroke-linecap="round" fill="none" opacity="0.72"/>
 <path d="M76.0,116.7 Q80.0,118.4 84.0,120.2" stroke="#eee" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.65"/></g>
 
-    <!-- FEET (bottom) -->
-    <ellipse cx="42" cy="146" rx="15" ry="10" fill="white" filter="url(#furEdgeSm)"/>
-    <ellipse cx="88" cy="146" rx="15" ry="10" fill="white" filter="url(#furEdgeSm)"/>
+    <!-- FEET (spread open, sitting) -->
+    <!-- left foot: angled outward-left -->
+    <ellipse cx="30" cy="148" rx="17" ry="11" fill="white" filter="url(#furEdgeSm)"
+             transform="rotate(-25,30,148)"/>
+    <!-- right foot: angled outward-right -->
+    <ellipse cx="100" cy="148" rx="17" ry="11" fill="white" filter="url(#furEdgeSm)"
+             transform="rotate(25,100,148)"/>
 
     <!-- LEFT ARM: single curved path from neck to clasped paws -->
     <g id="pet-paw-l">
@@ -1612,6 +1616,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <ellipse cx="79" cy="126" rx="3.5" ry="2.5" fill="#222" transform="rotate(18,79,126)"/>
     </g>
 
+    <!-- HEAD (tilted up) -->
+    <g transform="rotate(-35,65,66)">
     <!-- HEAD -->
     <ellipse cx="65" cy="66" rx="36" ry="34" fill="url(#faceG)" filter="url(#furEdge)"/>
     <g opacity="0.82"><path d="M55.0,65.5 Q48.3,62.7 41.5,65.2" stroke="#ccc" stroke-width="0.8" stroke-linecap="round" fill="none" opacity="0.94"/>
@@ -1808,16 +1814,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
     <!-- EYES -->
     <g id="pet-eye-l">
-      <ellipse cx="50" cy="62" rx="7" ry="7.5" fill="#111"/>
-      <ellipse cx="50" cy="62" rx="5.5" ry="6" fill="url(#eyeG)"/>
-      <ellipse cx="47.5" cy="58.5" rx="2.2" ry="2.2" fill="white" opacity=".92"/>
-      <ellipse cx="53" cy="63" rx="1" ry="1" fill="white" opacity=".4"/>
+      <ellipse cx="50" cy="62" rx="4.5" ry="5" fill="#111"/>
+      <ellipse cx="50" cy="62" rx="3.2" ry="3.8" fill="url(#eyeG)"/>
+      <ellipse cx="48.2" cy="59.8" rx="1.4" ry="1.4" fill="white" opacity=".92"/>
+      <ellipse cx="51.5" cy="63" rx="0.7" ry="0.7" fill="white" opacity=".4"/>
     </g>
     <g id="pet-eye-r">
-      <ellipse cx="80" cy="62" rx="7" ry="7.5" fill="#111"/>
-      <ellipse cx="80" cy="62" rx="5.5" ry="6" fill="url(#eyeG)"/>
-      <ellipse cx="77.5" cy="58.5" rx="2.2" ry="2.2" fill="white" opacity=".92"/>
-      <ellipse cx="83" cy="63" rx="1" ry="1" fill="white" opacity=".4"/>
+      <ellipse cx="80" cy="62" rx="4.5" ry="5" fill="#111"/>
+      <ellipse cx="80" cy="62" rx="3.2" ry="3.8" fill="url(#eyeG)"/>
+      <ellipse cx="78.2" cy="59.8" rx="1.4" ry="1.4" fill="white" opacity=".92"/>
+      <ellipse cx="81.5" cy="63" rx="0.7" ry="0.7" fill="white" opacity=".4"/>
     </g>
 
     <!-- NOSE -->
@@ -1826,6 +1832,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
     <!-- MOUTH -->
     <path id="pet-mouth" d="M57 85 Q65 91 73 85" stroke="#555" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    </g>
 
   </g>
 </svg>

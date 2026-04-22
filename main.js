@@ -7,15 +7,14 @@ function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
   win = new BrowserWindow({
-    width: 180,
-    height: 260,
+    width: 200,
+    height: 280,
     x: Math.floor(width * 0.75),
-    y: Math.floor(height * 0.6),
-    // 桌宠关键设置
-    frame: false,              // 无边框
-    transparent: true,         // 透明背景
-    alwaysOnTop: true,         // 始终置顶
-    skipTaskbar: false,        // 任务栏显示
+    y: Math.floor(height * 0.55),
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: false,
     resizable: false,
     hasShadow: false,
     backgroundColor: '#00000000',
@@ -29,23 +28,26 @@ function createWindow() {
   win.loadFile(path.join(__dirname, 'app', 'index.html'))
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
 
-  // IPC: 拖动窗口
   ipcMain.on('move-window', (_, { dx, dy }) => {
     const [x, y] = win.getPosition()
-    win.setPosition(x + dx, y + dy)
+    win.setPosition(x + Math.round(dx), y + Math.round(dy))
   })
 
-  // IPC: 切换聊天面板（展开/收起整个窗口）
   ipcMain.on('expand', () => {
-    win.setSize(420, 780)
-  })
-  ipcMain.on('collapse', () => {
-    win.setSize(180, 260)
+    const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize
+    const [wx, wy] = win.getPosition()
+    // reposition so it doesn't go off screen
+    const newX = Math.min(wx, sw - 420)
+    const newY = Math.min(wy, sh - 780)
+    win.setBounds({ x: newX, y: newY, width: 420, height: 780 })
   })
 
-  // IPC: 关闭 / 最小化
+  ipcMain.on('collapse', () => {
+    win.setSize(200, 280)
+  })
+
   ipcMain.on('close-app', () => app.quit())
-  ipcMain.on('hide-app', () => win.hide())
+  ipcMain.on('hide-app', () => win.minimize())
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)

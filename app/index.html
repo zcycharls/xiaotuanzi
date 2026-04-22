@@ -32,7 +32,8 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;
   background:var(--bg);font-family:'Nunito',sans-serif}
 
 /* ══ DESKTOP PET MODE ══ */
-body.pet-mode{background:transparent !important}
+body.pet-mode{background:transparent !important;}
+html.pet-mode-html{background:transparent !important}
 body.pet-mode::before{display:none}
 body.pet-mode .sp{display:none}
 body.pet-mode #settings-btn{display:none}
@@ -1268,6 +1269,8 @@ let petExpanded = false;
 
 if(IS_ELECTRON){
   document.body.classList.add('pet-mode');
+  document.documentElement.style.background = 'transparent';
+  document.documentElement.style.setProperty('--bg','transparent');
 
   // Tray buttons
   document.getElementById('tray-expand').addEventListener('click', ()=>{

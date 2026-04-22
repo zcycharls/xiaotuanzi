@@ -16,13 +16,16 @@
     },
     "files": [
       "app/**/*",
-      "main.js"
+      "main.js",
+      "preload.js"
     ],
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "app/icon.ico"

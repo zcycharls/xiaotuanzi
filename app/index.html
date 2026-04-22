@@ -31,6 +31,46 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;
   user-select:none;-webkit-user-select:none;
   background:var(--bg);font-family:'Nunito',sans-serif}
 
+/* ══ DESKTOP PET MODE ══ */
+body.pet-mode{background:transparent !important}
+body.pet-mode::before{display:none}
+body.pet-mode .sp{display:none}
+body.pet-mode #settings-btn{display:none}
+body.pet-mode #chat-dialog{display:none}
+body.pet-mode #chat-bar{display:none}
+body.pet-mode #hint{display:none}
+
+/* compact pet: just the pet + tray buttons */
+#pet-tray{
+  display:none;
+  position:fixed;top:4px;right:4px;
+  flex-direction:column;gap:4px;z-index:200}
+body.pet-mode #pet-tray{display:flex}
+
+.tray-btn{
+  width:22px;height:22px;border-radius:50%;border:none;
+  font-size:11px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(200,185,245,.75);
+  backdrop-filter:blur(6px);
+  color:#5a4a7a;transition:background .15s;
+  -webkit-app-region:no-drag}
+.tray-btn:hover{background:rgba(180,160,240,.9)}
+
+/* chat panel: full window overlay when expanded */
+body.pet-mode.expanded{background:var(--bg) !important}
+body.pet-mode.expanded::before{display:block}
+body.pet-mode.expanded #chat-dialog{display:flex}
+body.pet-mode.expanded #chat-bar{display:flex}
+body.pet-mode.expanded #settings-btn{display:flex}
+
+/* drag region on pet body */
+#pw{-webkit-app-region:drag}
+#chat-bar,#chat-dialog,#pet-tray,.tray-btn,
+#chat-input,#send-btn,#settings-btn,
+#task-input,#dlg-clear,#pomo-toggle,
+.qp,#pomo-start,#pomo-reset{-webkit-app-region:no-drag}
+
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:
     radial-gradient(circle at 20% 18%,rgba(200,181,245,.18) 0%,transparent 50%),
@@ -386,6 +426,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 <div id="sparkles"></div>
 <button id="settings-btn" aria-label="设置">⚙️</button>
+
+<!-- Desktop pet tray (only in pet mode) -->
+<div id="pet-tray">
+  <button class="tray-btn" id="tray-expand" title="展开聊天">💬</button>
+  <button class="tray-btn" id="tray-settings" title="设置">⚙️</button>
+  <button class="tray-btn" id="tray-hide" title="最小化">➖</button>
+  <button class="tray-btn" id="tray-close" title="退出">✕</button>
+</div>
 
 <div id="s-overlay"></div>
 
@@ -1212,6 +1260,55 @@ pw.style.opacity='0';
 pw.style.transition='opacity .6s ease';
 requestAnimationFrame(()=>requestAnimationFrame(()=>{pw.style.opacity='1';}));
 setTimeout(()=>{pw.style.transition='filter .2s';},700);
+
+
+/* ════════ DESKTOP PET MODE ════════ */
+const IS_ELECTRON = !!window.petBridge;
+let petExpanded = false;
+
+if(IS_ELECTRON){
+  document.body.classList.add('pet-mode');
+
+  // Tray buttons
+  document.getElementById('tray-expand').addEventListener('click', ()=>{
+    petExpanded = !petExpanded;
+    if(petExpanded){
+      document.body.classList.add('expanded');
+      window.petBridge.expand();
+      document.getElementById('tray-expand').textContent = '🐨';
+    } else {
+      document.body.classList.remove('expanded');
+      window.petBridge.collapse();
+      document.getElementById('tray-expand').textContent = '💬';
+    }
+  });
+
+  document.getElementById('tray-settings').addEventListener('click', ()=>{
+    // expand first then open settings
+    if(!petExpanded){
+      petExpanded = true;
+      document.body.classList.add('expanded');
+      window.petBridge.expand();
+      document.getElementById('tray-expand').textContent = '🐨';
+    }
+    openSettings();
+  });
+
+  document.getElementById('tray-hide').addEventListener('click', ()=>{
+    window.petBridge.hideApp();
+  });
+
+  document.getElementById('tray-close').addEventListener('click', ()=>{
+    window.petBridge.closeApp();
+  });
+
+  // In pet mode, clicking pet also toggles expand
+  pw.addEventListener('click', (e)=>{
+    if(!e.target.closest('.tray-btn')) {
+      document.getElementById('tray-expand').click();
+    }
+  });
+}
 
 })();
 </script>

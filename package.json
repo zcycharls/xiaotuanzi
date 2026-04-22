@@ -27,8 +27,7 @@
             "x64"
           ]
         }
-      ],
-      "backgroundColor": "#00000000"
+      ]
     },
     "electronVersion": "28.3.3"
   },

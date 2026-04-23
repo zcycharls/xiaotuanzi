@@ -1342,6 +1342,13 @@ if(IS_ELECTRON){
   else petImg.addEventListener('load', setupAlpha);
 
   function isOverKoala(cx, cy){
+    // Always respond over tray buttons
+    const tray = document.getElementById('pet-tray');
+    if(tray){
+      const tr = tray.getBoundingClientRect();
+      if(cx>=tr.left&&cx<=tr.right&&cy>=tr.top&&cy<=tr.bottom) return true;
+    }
+    // Check pixel alpha on koala image
     const rect = petImg.getBoundingClientRect();
     if(cx<rect.left||cx>rect.right||cy<rect.top||cy>rect.bottom) return false;
     const sx = Math.round((cx-rect.left)/rect.width*alphaCanvas.width);

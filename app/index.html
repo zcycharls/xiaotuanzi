@@ -86,7 +86,7 @@ body.pet-mode.expanded #chat-bar{display:flex}
 body.pet-mode.expanded #settings-btn{display:flex}
 
 /* drag region on pet body */
-#pw{-webkit-app-region:no-drag}
+#pw{position:fixed;inset:0;overflow:hidden;cursor:grab}
 #chat-bar,#chat-dialog,#pet-tray,.tray-btn,
 #chat-input,#send-btn,#settings-btn,
 #task-input,#dlg-clear,#pomo-toggle,
@@ -175,23 +175,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 #save-btn:active{transform:scale(.97)}
 
 /* ═══ PET ═══ */
-#pw{position:fixed;inset:0;width:100%;height:100%;padding:0;margin:0;overflow:hidden;cursor:grab;z-index:10;
-  transition:filter .2s;will-change:transform}
+#pw{position:fixed;inset:0;overflow:hidden;cursor:grab}
 #pw:active{cursor:grabbing}
 #pw.happy{filter:drop-shadow(0 0 20px rgba(180,150,255,.7))}
 #pw.thinking{filter:drop-shadow(0 0 16px rgba(130,190,255,.65))}
 
-.pet-img-wrap{
-  position:absolute;inset:0;width:100%;height:100%;overflow:hidden;
-  animation:breathe-photo 3.6s ease-in-out infinite;
-  transform-origin:center 85%;
-  filter:drop-shadow(0 8px 16px rgba(60,40,100,.18))}
+.pet-img-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
 @keyframes breathe-photo{
   0%,100%{transform:scale(1,1)}
   50%{transform:scale(.985,1.02)}
 }
 
-#pet-img{display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:center center;-webkit-user-select:none;user-select:none;pointer-events:none}
+#pet-img{display:block;width:100%;height:100%;object-fit:fill;-webkit-user-select:none;user-select:none;pointer-events:none}
 
 /* click jump */
 #pw.jumping{animation:pet-jump .58s cubic-bezier(.3,1.5,.5,1)}
@@ -204,7 +199,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 }
 
 /* happy wobble */
-#pw.happy .pet-img-wrap{animation:photo-wobble .5s ease-in-out 2,breathe-photo 3.6s ease-in-out infinite}
+#pw.happy .pet-img-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
 @keyframes photo-wobble{
   0%,100%{transform:rotate(0)}
   25%{transform:rotate(-4deg)}

@@ -45,9 +45,10 @@ function createWindow() {
 
   ipcMain.on('expand', () => {
     const [x, y] = win.getPosition()
-    const nx = Math.min(x, sw - 420)
-    const ny = Math.min(y, sh - 780)
-    win.setBounds({ x: nx, y: ny, width: 420, height: 780 })
+    const chatW = 400, chatH = 700
+    const nx = Math.max(0, Math.min(x, sw - chatW))
+    const ny = Math.max(0, Math.min(y, sh - chatH))
+    win.setBounds({ x: nx, y: ny, width: chatW, height: chatH })
   })
 
   ipcMain.on('collapse', () => {

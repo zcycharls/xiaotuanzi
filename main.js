@@ -23,6 +23,7 @@ function createWindow() {
     alwaysOnTop: true,
     skipTaskbar: false,
     focusable: false,
+    thickFrame: false,
     resizable: false,
     hasShadow: false,
     backgroundColor: '#00000001',
@@ -117,6 +118,10 @@ function createWindow() {
   })
 
   ipcMain.on('close-app', () => app.quit())
+  ipcMain.on('close-self', (evt) => {
+    const w = BrowserWindow.fromWebContents(evt.sender)
+    if(w && !w.isDestroyed()) w.close()
+  })
   ipcMain.on('hide-app', () => win.minimize())
 
   win.webContents.setWindowOpenHandler(({ url }) => {

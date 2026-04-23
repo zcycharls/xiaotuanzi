@@ -1337,7 +1337,7 @@ if(IS_ELECTRON && IS_CHAT_MODE){
     const closeBtn = document.createElement('button');
     closeBtn.innerHTML = '✕';
     closeBtn.style.cssText = 'padding:4px 11px;border-radius:20px;border:none;background:rgba(240,235,255,.8);font-family:Nunito,sans-serif;font-size:11px;font-weight:700;color:#9b8cc0;cursor:pointer;touch-action:manipulation';
-    closeBtn.onclick = () => window.petBridge.collapse();
+    closeBtn.onclick = () => window.petBridge.closeSelf();
     hdrBtns.appendChild(closeBtn);
   }
 } else if(IS_ELECTRON && IS_SETTINGS_MODE){
@@ -1345,7 +1345,7 @@ if(IS_ELECTRON && IS_CHAT_MODE){
   // Show settings panel directly
   openSettings();
   // Replace close button with window close
-  document.getElementById('s-close').onclick = () => window.petBridge.collapse();
+  document.getElementById('s-close').onclick = () => window.petBridge.closeSelf();
 } else if(IS_ELECTRON){
   document.body.classList.add('pet-mode');
   document.documentElement.style.background = 'transparent';

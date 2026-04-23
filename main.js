@@ -85,6 +85,32 @@ function createWindow() {
     win.setIgnoreMouseEvents(ignore, { forward: true })
   })
 
+  let settingsWin = null
+  ipcMain.on('open-settings', () => {
+    if (settingsWin && !settingsWin.isDestroyed()) {
+      settingsWin.focus(); return
+    }
+    const [x, y] = win.getPosition()
+    settingsWin = new BrowserWindow({
+      width: 360,
+      height: 580,
+      x: Math.max(0, x - 368),
+      y: y,
+      frame: false,
+      alwaysOnTop: true,
+      backgroundColor: '#f5f0ff',
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        preload: path.join(__dirname, 'preload.js'),
+      },
+    })
+    settingsWin.loadFile(path.join(__dirname, 'app', 'index.html'), {
+      query: { mode: 'settings' }
+    })
+    settingsWin.on('closed', () => { settingsWin = null })
+  })
+
   ipcMain.on('close-app', () => app.quit())
   ipcMain.on('hide-app', () => win.minimize())
 

@@ -31,6 +31,24 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;box-sizing:bo
   user-select:none;-webkit-user-select:none;
   background:var(--bg);font-family:'Nunito',sans-serif}
 
+/* ══ SETTINGS ONLY MODE ══ */
+body.settings-only-mode{background:#f5f0ff !important;overflow-y:auto}
+body.settings-only-mode #pw{display:none !important}
+body.settings-only-mode #sparkles{display:none !important}
+body.settings-only-mode #chat-dialog{display:none !important}
+body.settings-only-mode #chat-bar{display:none !important}
+body.settings-only-mode #hint{display:none !important}
+body.settings-only-mode #pet-tray{display:none !important}
+body.settings-only-mode #settings-btn{display:none !important}
+body.settings-only-mode #s-panel{
+  position:relative !important;
+  transform:none !important;
+  border-radius:0 !important;
+  max-height:none !important;
+  box-shadow:none !important;
+  display:block !important}
+body.settings-only-mode #s-overlay{display:none !important}
+
 /* ══ CHAT ONLY MODE (separate chat window) ══ */
 body.chat-only-mode{background:#f5f0ff !important;overflow:hidden}
 body.chat-only-mode::before{display:block !important}
@@ -54,6 +72,7 @@ body.chat-only-mode #chat-dialog{
 body.chat-only-mode #chat-bar{display:flex !important}
 body.chat-only-mode #quick-bar{display:flex !important}
 body.chat-only-mode #mini-bubble{display:none !important}
+body.chat-only-mode #settings-btn{display:none !important}
 
 /* ══ DESKTOP PET MODE ══ */
 body.pet-mode{background:transparent !important;}
@@ -1303,6 +1322,7 @@ setTimeout(()=>{pw.style.transition='filter .2s';},700);
 const IS_ELECTRON = !!window.petBridge;
 const urlParams = new URLSearchParams(window.location.search);
 const IS_CHAT_MODE = urlParams.get('mode') === 'chat';
+const IS_SETTINGS_MODE = urlParams.get('mode') === 'settings';
 let petExpanded = false;
 
 if(IS_ELECTRON && IS_CHAT_MODE){
@@ -1320,6 +1340,12 @@ if(IS_ELECTRON && IS_CHAT_MODE){
     closeBtn.onclick = () => window.petBridge.collapse();
     hdrBtns.appendChild(closeBtn);
   }
+} else if(IS_ELECTRON && IS_SETTINGS_MODE){
+  document.body.classList.add('settings-only-mode');
+  // Show settings panel directly
+  openSettings();
+  // Replace close button with window close
+  document.getElementById('s-close').onclick = () => window.petBridge.collapse();
 } else if(IS_ELECTRON){
   document.body.classList.add('pet-mode');
   document.documentElement.style.background = 'transparent';
@@ -1338,14 +1364,7 @@ if(IS_ELECTRON && IS_CHAT_MODE){
   });
 
   document.getElementById('tray-settings').addEventListener('click', ()=>{
-    // expand first then open settings
-    if(!petExpanded){
-      petExpanded = true;
-      document.body.classList.add('expanded');
-      window.petBridge.expand();
-      document.getElementById('tray-expand').textContent = '🐨';
-    }
-    openSettings();
+    window.petBridge.openSettings();
   });
 
   document.getElementById('tray-hide').addEventListener('click', ()=>{

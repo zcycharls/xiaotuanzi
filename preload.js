@@ -7,4 +7,5 @@ contextBridge.exposeInMainWorld('petBridge', {
   closeApp:   ()       => ipcRenderer.send('close-app'),
   hideApp:          ()       => ipcRenderer.send('hide-app'),
   setIgnoreMouse:   (v)      => ipcRenderer.send('set-ignore-mouse', v),
+  openSettings:     ()       => ipcRenderer.send('open-settings'),
 })

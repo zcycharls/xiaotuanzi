@@ -1,6 +1,6 @@
 {
   "name": "xiaotuanzi",
-  "version": "1.0.0",
+  "version": "1.0423.0128",
   "description": "小团子 ADHD 陪伴宠物",
   "main": "main.js",
   "scripts": {
@@ -36,5 +36,6 @@
     "electron": "^28.0.0",
     "@electron/packager": "^18.0.0",
     "electron-builder": "^24.0.0"
-  }
+  },
+  "author": "zcycharls"
 }

@@ -7,8 +7,8 @@ function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
   win = new BrowserWindow({
-    width: 200,
-    height: 280,
+    width: 260,
+    height: 320,
     x: Math.floor(width * 0.75),
     y: Math.floor(height * 0.55),
     frame: false,
@@ -51,7 +51,7 @@ function createWindow() {
   })
 
   ipcMain.on('collapse', () => {
-    win.setSize(200, 280)
+    win.setSize(260, 320)
   })
 
   ipcMain.on('close-app', () => app.quit())

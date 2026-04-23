@@ -7,10 +7,10 @@ function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
   win = new BrowserWindow({
-    width: 260,
-    height: 320,
-    x: Math.floor(width * 0.65),
-    y: Math.floor(height * 0.5),
+    width: 220,
+    height: 270,
+    x: Math.floor(width * 0.6),
+    y: Math.floor(height * 0.55),
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -51,7 +51,7 @@ function createWindow() {
   })
 
   ipcMain.on('collapse', () => {
-    win.setSize(260, 320)
+    win.setSize(220, 270)
   })
 
   ipcMain.on('close-app', () => app.quit())

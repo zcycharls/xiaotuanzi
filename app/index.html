@@ -1282,17 +1282,28 @@ const IS_CHAT_MODE = urlParams.get('mode') === 'chat';
 let petExpanded = false;
 
 if(IS_ELECTRON && IS_CHAT_MODE){
-  // Chat window mode: show full chat UI
-  document.body.classList.add('pet-mode','expanded');
+  // Chat-only window: hide pet, show only chat UI
+  document.body.classList.add('chat-only-mode');
   document.body.style.background = '#f5f0ff';
-  // Add close button to chat window
+  // Hide pet and sparkles
+  document.getElementById('pw').style.display = 'none';
+  document.getElementById('sparkles').style.display = 'none';
+  document.getElementById('hint').style.display = 'none';
+  const petTray = document.getElementById('pet-tray');
+  if(petTray) petTray.style.display = 'none';
+  // Show chat
+  showDialog();
+  // Override settings button close to close this window
+  document.getElementById('settings-btn').style.display = 'flex';
+  // Add dedicated close button
   const closeBtn = document.createElement('button');
-  closeBtn.textContent = '✕';
-  closeBtn.style.cssText = 'position:fixed;top:12px;right:12px;z-index:999;width:32px;height:32px;border-radius:50%;border:none;background:#f0ebff;font-size:16px;cursor:pointer;color:#9b8cc0;display:flex;align-items:center;justify-content:center';
+  closeBtn.innerHTML = '✕';
+  closeBtn.style.cssText = 'position:fixed;top:14px;left:14px;z-index:999;width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(210,195,255,.65);background:rgba(255,255,255,.88);font-size:16px;cursor:pointer;color:#9b8cc0;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(14px)';
   closeBtn.onclick = () => window.petBridge.collapse();
   document.body.appendChild(closeBtn);
-  // Show dialog immediately
-  showDialog();
+  // Adjust dialog top offset since no pet
+  const dlg = document.getElementById('chat-dialog');
+  if(dlg){ dlg.style.top = '14px'; dlg.style.bottom = '72px'; dlg.style.maxHeight = 'none'; }
 } else if(IS_ELECTRON){
   document.body.classList.add('pet-mode');
   document.documentElement.style.background = 'transparent';

@@ -22,6 +22,7 @@ function createWindow() {
     transparent: true,
     alwaysOnTop: true,
     skipTaskbar: false,
+    focusable: false,
     resizable: false,
     hasShadow: false,
     backgroundColor: '#00000001',
@@ -37,6 +38,7 @@ function createWindow() {
     win.setBackgroundColor('#00000000')
   })
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  win.setAlwaysOnTop(true, 'screen-saver')
 
   ipcMain.on('move-window', (_, { dx, dy }) => {
     const [x, y] = win.getPosition()

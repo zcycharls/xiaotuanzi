@@ -24,7 +24,7 @@ function createWindow() {
     skipTaskbar: false,
     resizable: false,
     hasShadow: false,
-    backgroundColor: '#00000000',
+    backgroundColor: '#00000001',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -33,6 +33,9 @@ function createWindow() {
   })
 
   win.loadFile(path.join(__dirname, 'app', 'index.html'))
+  win.webContents.on('did-finish-load', () => {
+    win.setBackgroundColor('#00000000')
+  })
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
 
   ipcMain.on('move-window', (_, { dx, dy }) => {

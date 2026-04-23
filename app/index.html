@@ -41,7 +41,7 @@ body.pet-mode #chat-dialog{display:none}
 
 /* mini bubble in pet mode */
 #mini-bubble{
-  position:fixed;left:50%;bottom:250px;
+  position:fixed;left:50%;bottom:60px;
   transform:translateX(-50%);
   background:#fff;border:2px solid #e2d8ff;
   border-radius:16px 16px 16px 4px;
@@ -64,7 +64,7 @@ body.pet-mode #hint{display:none}
 /* compact pet: just the pet + tray buttons */
 #pet-tray{
   display:none;
-  position:fixed;top:4px;right:4px;
+  position:fixed;bottom:8px;right:4px;
   flex-direction:column;gap:4px;z-index:200}
 body.pet-mode #pet-tray{display:flex}
 
@@ -175,7 +175,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 #save-btn:active{transform:scale(.97)}
 
 /* ═══ PET ═══ */
-#pw{position:fixed;width:130px;height:155px;cursor:grab;z-index:10;
+#pw{position:fixed;width:100%;height:100%;cursor:grab;z-index:10;
   transition:filter .2s;will-change:transform}
 #pw:active{cursor:grabbing}
 #pw.happy{filter:drop-shadow(0 0 20px rgba(180,150,255,.7))}
@@ -194,6 +194,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 #pet-img{
   width:100%;height:100%;
   object-fit:contain;
+  object-position:center bottom;
   -webkit-user-select:none;user-select:none;
   pointer-events:none;
   /* soft oval mask to fade background */
@@ -1325,12 +1326,7 @@ if(IS_ELECTRON){
     window.petBridge.closeApp();
   });
 
-  // In pet mode, clicking pet also toggles expand
-  pw.addEventListener('click', (e)=>{
-    if(!e.target.closest('.tray-btn')) {
-      document.getElementById('tray-expand').click();
-    }
-  });
+  // In pet mode, clicking pet does NOT expand — handled by mouseup above
 }
 
 })();

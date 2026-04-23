@@ -31,6 +31,30 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;box-sizing:bo
   user-select:none;-webkit-user-select:none;
   background:var(--bg);font-family:'Nunito',sans-serif}
 
+/* ══ CHAT ONLY MODE (separate chat window) ══ */
+body.chat-only-mode{background:#f5f0ff !important;overflow:hidden}
+body.chat-only-mode::before{display:block !important}
+body.chat-only-mode .sp{display:block !important}
+body.chat-only-mode #pw{display:none !important}
+body.chat-only-mode #sparkles{display:none !important}
+body.chat-only-mode #hint{display:none !important}
+body.chat-only-mode #pet-tray{display:none !important}
+body.chat-only-mode #settings-btn{display:flex !important;top:14px;right:14px}
+body.chat-only-mode #chat-dialog{
+  display:flex !important;
+  position:fixed !important;
+  top:14px !important;
+  left:12px !important;
+  right:12px !important;
+  bottom:145px !important;
+  max-height:none !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+  transform:none !important}
+body.chat-only-mode #chat-bar{display:flex !important}
+body.chat-only-mode #quick-bar{display:flex !important}
+body.chat-only-mode #mini-bubble{display:none !important}
+
 /* ══ DESKTOP PET MODE ══ */
 body.pet-mode{background:transparent !important;}
 body.pet-mode *{outline:none !important;-webkit-tap-highlight-color:transparent}
@@ -1282,28 +1306,14 @@ const IS_CHAT_MODE = urlParams.get('mode') === 'chat';
 let petExpanded = false;
 
 if(IS_ELECTRON && IS_CHAT_MODE){
-  // Chat-only window: hide pet, show only chat UI
   document.body.classList.add('chat-only-mode');
-  document.body.style.background = '#f5f0ff';
-  // Hide pet and sparkles
-  document.getElementById('pw').style.display = 'none';
-  document.getElementById('sparkles').style.display = 'none';
-  document.getElementById('hint').style.display = 'none';
-  const petTray = document.getElementById('pet-tray');
-  if(petTray) petTray.style.display = 'none';
-  // Show chat
   showDialog();
-  // Override settings button close to close this window
-  document.getElementById('settings-btn').style.display = 'flex';
-  // Add dedicated close button
+  // Close button (top-left)
   const closeBtn = document.createElement('button');
   closeBtn.innerHTML = '✕';
-  closeBtn.style.cssText = 'position:fixed;top:14px;left:14px;z-index:999;width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(210,195,255,.65);background:rgba(255,255,255,.88);font-size:16px;cursor:pointer;color:#9b8cc0;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(14px)';
+  closeBtn.style.cssText = 'position:fixed;top:14px;left:14px;z-index:999;width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(210,195,255,.65);background:rgba(255,255,255,.88);backdrop-filter:blur(14px);font-size:16px;cursor:pointer;color:#9b8cc0;display:flex;align-items:center;justify-content:center;touch-action:manipulation';
   closeBtn.onclick = () => window.petBridge.collapse();
   document.body.appendChild(closeBtn);
-  // Adjust dialog top offset since no pet
-  const dlg = document.getElementById('chat-dialog');
-  if(dlg){ dlg.style.top = '14px'; dlg.style.bottom = '72px'; dlg.style.maxHeight = 'none'; }
 } else if(IS_ELECTRON){
   document.body.classList.add('pet-mode');
   document.documentElement.style.background = 'transparent';

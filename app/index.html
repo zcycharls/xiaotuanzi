@@ -27,7 +27,7 @@
   --msg-user-bg:linear-gradient(135deg,#b39ddb,#7c5cbf);
 }
 
-html,body{width:100%;height:100%;overflow:hidden;touch-action:none;
+html,body{width:100%;height:100%;overflow:hidden;touch-action:none;box-sizing:border-box;
   user-select:none;-webkit-user-select:none;
   background:var(--bg);font-family:'Nunito',sans-serif}
 
@@ -175,14 +175,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 #save-btn:active{transform:scale(.97)}
 
 /* ═══ PET ═══ */
-#pw{position:fixed;width:100%;height:100%;padding:0;margin:0;cursor:grab;z-index:10;
+#pw{position:fixed;inset:0;width:100%;height:100%;padding:0;margin:0;overflow:hidden;cursor:grab;z-index:10;
   transition:filter .2s;will-change:transform}
 #pw:active{cursor:grabbing}
 #pw.happy{filter:drop-shadow(0 0 20px rgba(180,150,255,.7))}
 #pw.thinking{filter:drop-shadow(0 0 16px rgba(130,190,255,.65))}
 
 .pet-img-wrap{
-  width:100%;height:100%;
+  width:100%;height:100%;overflow:hidden;
   animation:breathe-photo 3.6s ease-in-out infinite;
   transform-origin:center 85%;
   filter:drop-shadow(0 8px 16px rgba(60,40,100,.18))}

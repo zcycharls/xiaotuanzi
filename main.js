@@ -9,8 +9,8 @@ function createWindow() {
   win = new BrowserWindow({
     width: 260,
     height: 320,
-    x: Math.floor(width * 0.75),
-    y: Math.floor(height * 0.55),
+    x: Math.floor(width * 0.65),
+    y: Math.floor(height * 0.5),
     frame: false,
     transparent: true,
     alwaysOnTop: true,

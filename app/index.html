@@ -84,7 +84,6 @@ body.pet-mode #pet-tray{display:flex}
 body.pet-mode.expanded{background:var(--bg) !important}
 body.pet-mode.expanded::before{display:block}
 body.pet-mode.expanded #chat-dialog{display:flex}
-body.pet-mode.expanded #pw{display:none}
 body.pet-mode.expanded #chat-bar{display:flex}
 body.pet-mode.expanded #settings-btn{display:flex}
 
@@ -1278,9 +1277,23 @@ setTimeout(()=>{pw.style.transition='filter .2s';},700);
 
 /* ════════ DESKTOP PET MODE ════════ */
 const IS_ELECTRON = !!window.petBridge;
+const urlParams = new URLSearchParams(window.location.search);
+const IS_CHAT_MODE = urlParams.get('mode') === 'chat';
 let petExpanded = false;
 
-if(IS_ELECTRON){
+if(IS_ELECTRON && IS_CHAT_MODE){
+  // Chat window mode: show full chat UI
+  document.body.classList.add('pet-mode','expanded');
+  document.body.style.background = '#f5f0ff';
+  // Add close button to chat window
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '✕';
+  closeBtn.style.cssText = 'position:fixed;top:12px;right:12px;z-index:999;width:32px;height:32px;border-radius:50%;border:none;background:#f0ebff;font-size:16px;cursor:pointer;color:#9b8cc0;display:flex;align-items:center;justify-content:center';
+  closeBtn.onclick = () => window.petBridge.collapse();
+  document.body.appendChild(closeBtn);
+  // Show dialog immediately
+  showDialog();
+} else if(IS_ELECTRON){
   document.body.classList.add('pet-mode');
   document.documentElement.style.background = 'transparent';
   document.documentElement.style.setProperty('--bg','transparent');

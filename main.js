@@ -43,16 +43,42 @@ function createWindow() {
     win.setPosition(nx, ny)
   })
 
+  let chatWin = null
+
   ipcMain.on('expand', () => {
+    if (chatWin && !chatWin.isDestroyed()) {
+      chatWin.focus()
+      return
+    }
     const [x, y] = win.getPosition()
-    const chatW = 400, chatH = 700
-    const nx = Math.max(0, Math.min(x, sw - chatW))
-    const ny = Math.max(0, Math.min(y, sh - chatH))
-    win.setBounds({ x: nx, y: ny, width: chatW, height: chatH })
+    const chatW = 380, chatH = 680
+    // Place chat window to the left of pet, or right if not enough space
+    let cx = x - chatW - 8
+    if (cx < 0) cx = x + W + 8
+    cx = Math.max(0, Math.min(cx, sw - chatW))
+    const cy = Math.max(0, Math.min(y, sh - chatH))
+
+    chatWin = new BrowserWindow({
+      width: chatW,
+      height: chatH,
+      x: cx, y: cy,
+      frame: false,
+      alwaysOnTop: true,
+      backgroundColor: '#f5f0ff',
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        preload: path.join(__dirname, 'preload.js'),
+      },
+    })
+    chatWin.loadFile(path.join(__dirname, 'app', 'index.html'), {
+      query: { mode: 'chat' }
+    })
+    chatWin.on('closed', () => { chatWin = null })
   })
 
   ipcMain.on('collapse', () => {
-    win.setSize(W, H)
+    if (chatWin && !chatWin.isDestroyed()) chatWin.close()
   })
 
   ipcMain.on('set-ignore-mouse', (_, ignore) => {

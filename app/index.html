@@ -472,6 +472,27 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 #send-btn:active{transform:scale(.89)}
 #send-btn:disabled{opacity:.42;cursor:default}
 
+/* ═══ ATTACH BUTTON ═══ */
+#attach-btn{width:36px;height:36px;min-width:36px;border-radius:50%;border:1.5px solid #e2d8ff;
+  background:#fdf9ff;color:#9c84d4;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:transform .14s,background .15s,border-color .15s;touch-action:manipulation;flex-shrink:0}
+#attach-btn:hover{background:#f0eaff;border-color:#c4b0f0}
+#attach-btn:active{transform:scale(.89)}
+#attach-btn.has-img{background:#ede6ff;border-color:#a890e0;color:#7c5cbf}
+
+/* ═══ IMAGE PREVIEW ═══ */
+#img-preview-area{display:none;padding:4px 12px 2px;align-items:flex-end;gap:0}
+#img-preview-area.visible{display:flex}
+#img-preview-thumb{width:56px;height:56px;object-fit:cover;border-radius:10px;
+  border:1.5px solid #d8ccf8;flex-shrink:0}
+#img-preview-remove{width:20px;height:20px;border-radius:50%;border:none;
+  background:#b09ad0;color:#fff;font-size:11px;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  margin-left:-10px;margin-bottom:38px;flex-shrink:0;
+  font-weight:700;transition:background .15s;z-index:2}
+#img-preview-remove:hover{background:#9278bc}
+
 #hint{position:fixed;bottom:110px;left:0;right:0;text-align:center;
   font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.03em;
   opacity:.65;pointer-events:none;z-index:5;transition:opacity .4s}
@@ -594,7 +615,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 <div id="chat-bar">
   <div id="quick-bar" role="toolbar" aria-label="快捷短句"></div>
+  <div id="img-preview-area">
+    <img id="img-preview-thumb" src="" alt="已选图片">
+    <button id="img-preview-remove" aria-label="移除图片">✕</button>
+  </div>
   <div id="chat-row">
+    <input type="file" id="file-input" accept="image/*" style="display:none">
+    <button id="attach-btn" aria-label="上传图片" title="上传图片">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+    </button>
     <textarea id="chat-input" rows="1" placeholder="和小团子说说话…" maxlength="400"></textarea>
     <button id="send-btn" aria-label="发送">➤</button>
   </div>
@@ -847,9 +876,8 @@ function escHtml(s){
 
 let thinkingEl=null;
 
-function appendMsg(role,text){
+function appendMsg(role,text,img){
   showDialog();
-  // remove thinking indicator if present
   if(thinkingEl){thinkingEl.remove();thinkingEl=null;}
 
   const row=document.createElement('div');
@@ -863,9 +891,11 @@ function appendMsg(role,text){
         <div class="dlg-time">${fmtTime(new Date())}</div>
       </div>`;
   } else {
+    const imgHtml=img?`<img src="${img.dataUrl}" style="max-width:180px;max-height:180px;border-radius:10px;display:block;margin-bottom:${text?'6px':'0'};border:1.5px solid #e2d8ff" alt="图片">`:'' ;
+    const textHtml=text?`<span>${escHtml(text)}</span>`:'';
     row.innerHTML=`
       <div class="dlg-msg-wrap">
-        <div class="dlg-bubble">${escHtml(text)}</div>
+        <div class="dlg-bubble">${imgHtml}${textHtml}</div>
         <div class="dlg-time">${fmtTime(new Date())}</div>
       </div>`;
   }
@@ -948,12 +978,46 @@ const chatInput=document.getElementById('chat-input');
 const sendBtn=document.getElementById('send-btn');
 const pw=document.getElementById('pw');
 
+/* ── image attachment ── */
+let attachedImage=null; // {base64, mediaType, dataUrl}
+const fileInput=document.getElementById('file-input');
+const attachBtn=document.getElementById('attach-btn');
+const imgPreviewArea=document.getElementById('img-preview-area');
+const imgPreviewThumb=document.getElementById('img-preview-thumb');
+const imgPreviewRemove=document.getElementById('img-preview-remove');
+
+attachBtn.addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',()=>{
+  const file=fileInput.files[0];
+  if(!file||!file.type.startsWith('image/')) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const dataUrl=e.target.result;
+    attachedImage={base64:dataUrl.split(',')[1],mediaType:file.type,dataUrl};
+    imgPreviewThumb.src=dataUrl;
+    imgPreviewArea.classList.add('visible');
+    attachBtn.classList.add('has-img');
+  };
+  reader.readAsDataURL(file);
+  fileInput.value='';
+});
+imgPreviewRemove.addEventListener('click',clearAttachment);
+function clearAttachment(){
+  attachedImage=null;
+  imgPreviewArea.classList.remove('visible');
+  attachBtn.classList.remove('has-img');
+  imgPreviewThumb.src='';
+}
+
 async function send(){
   if(busy) return;
-  const msg=chatInput.value.trim();if(!msg) return;
+  const msg=chatInput.value.trim();
+  const img=attachedImage;
+  if(!msg&&!img) return;
   chatInput.value='';chatInput.style.height='';
+  clearAttachment();
   setHappy(true);spawnHeart(px+55,py+35);
-  appendMsg('user',msg);
+  appendMsg('user',msg,img);
 
   if(!hasKey()){
     setTimeout(()=>appendMsg('pet',rand(FALLBACK)),300);
@@ -967,16 +1031,14 @@ async function send(){
   /* swap to stream bubble on first chunk */
   let firstChunk=true;
   const origOnStreamChunk=onStreamChunk;
-  // patch: intercept first chunk to create bubble
   const _patch=chunk=>{
     if(firstChunk){firstChunk=false;startStreamBubble();}
     origOnStreamChunk(chunk);
   };
-  // temporarily override
   window._streamPatch=_patch;
 
   try{
-    await streamAPIPatched(msg);
+    await streamAPIPatched(msg,img);
     pw.classList.remove('thinking');
     finalizeStreamBubble();
   }catch(e){
@@ -991,10 +1053,29 @@ async function send(){
 }
 
 /* Patched wrapper that uses _streamPatch for first-chunk detection */
-async function streamAPIPatched(msg){
-  history.push({role:'user',content:msg});
-  if(history.length>20) history=history.slice(-20);
+async function streamAPIPatched(msg,img){
   const isAnthropic=cfg.p==='anthropic';
+
+  /* build user content (text-only or multimodal) */
+  let userContent;
+  if(img){
+    if(isAnthropic){
+      userContent=[
+        {type:'image',source:{type:'base64',media_type:img.mediaType,data:img.base64}},
+        ...(msg?[{type:'text',text:msg}]:[])
+      ];
+    } else {
+      userContent=[
+        {type:'image_url',image_url:{url:img.dataUrl}},
+        ...(msg?[{type:'text',text:msg}]:[])
+      ];
+    }
+  } else {
+    userContent=msg;
+  }
+
+  history.push({role:'user',content:userContent});
+  if(history.length>20) history=history.slice(-20);
   const model=cfg.m||(isAnthropic?DEFAULT_MODEL.anthropic:DEFAULT_MODEL.openai);
   const url=isAnthropic
     ?proxify('https://api.anthropic.com/v1/messages')
@@ -1456,8 +1537,8 @@ if(IS_ELECTRON && IS_CHAT_MODE){
 
   /* ── Patch appendMsg: show mini bubble when collapsed ── */
   const _origAppendMsg = appendMsg;
-  appendMsg = function(role, text){
-    _origAppendMsg(role, text);
+  appendMsg = function(role, text, img){
+    _origAppendMsg(role, text, img);
     if(role==='pet' && !petExpanded){
       showMini(text.length>55 ? text.slice(0,53)+'…' : text);
     }

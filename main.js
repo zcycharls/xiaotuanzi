@@ -10,8 +10,8 @@ let win
 function createWindow() {
   const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize
 
-  // Image is 240x286 — use exactly this as window size
-  const W = 240, H = 286
+  // Image is 240x286; add 120px right gutter so the tray buttons clearly clear the koala
+  const W = 360, H = 320
 
   win = new BrowserWindow({
     width: W,
@@ -41,12 +41,13 @@ function createWindow() {
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
   win.setAlwaysOnTop(true, 'screen-saver')
 
-  ipcMain.on('move-window', (_, { dx, dy }) => {
-    const [x, y] = win.getPosition()
-    const [w, h] = win.getSize()
+  ipcMain.on('move-window', (event, { dx, dy }) => {
+    const sender = BrowserWindow.fromWebContents(event.sender) || win
+    const [x, y] = sender.getPosition()
+    const [w, h] = sender.getSize()
     const nx = Math.max(0, Math.min(sw - w, x + Math.round(dx)))
     const ny = Math.max(0, Math.min(sh - h, y + Math.round(dy)))
-    win.setPosition(nx, ny)
+    sender.setPosition(nx, ny)
   })
 
   let chatWin = null

@@ -137,8 +137,9 @@ body.pet-mode.expanded #settings-btn{display:flex}
 #pw{position:fixed;inset:0;overflow:hidden;cursor:grab}
 #chat-bar,#chat-dialog,#pet-tray,.tray-btn,
 #chat-input,#send-btn,#settings-btn,
-#task-input,#dlg-clear,#pomo-toggle,
-.qp,#pomo-start,#pomo-reset{-webkit-app-region:no-drag}
+#task-add-input,#task-list,#dlg-clear,#pomo-toggle,
+.qp,#pomo-start,#pomo-reset,
+.tl-row,.tl-btn,.tl-check,.tl-menu-btn,.tl-sub-del{-webkit-app-region:no-drag}
 
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:
@@ -362,23 +363,130 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .tdots span:nth-child(3){animation-delay:.32s}
 @keyframes db{0%,80%,100%{transform:scale(.65);opacity:.45}40%{transform:scale(1);opacity:1}}
 
-/* ═══ TASK ANCHOR ═══ */
-#task-anchor{
-  display:flex;align-items:center;gap:7px;
-  padding:7px 14px 7px;flex-shrink:0;
-  border-bottom:1px solid rgba(210,195,255,.35);
-  background:rgba(244,240,255,.55)}
-#task-icon{font-size:13px;flex-shrink:0;opacity:.7}
-#task-input{
+/* ═══ TASK LIST ═══ */
+#task-list{
+  flex-shrink:0;border-bottom:1px solid rgba(210,195,255,.35);
+  background:rgba(244,240,255,.55);
+  display:flex;flex-direction:column;
+  max-height:42vh;overflow-y:auto;
+  scrollbar-width:thin;scrollbar-color:rgba(180,150,240,.3) transparent}
+#task-list::-webkit-scrollbar{width:3px}
+#task-list::-webkit-scrollbar-thumb{background:rgba(180,150,240,.35);border-radius:2px}
+#task-add-row{display:flex;align-items:center;gap:7px;padding:8px 14px;flex-shrink:0;
+  border-bottom:1px solid rgba(210,195,255,.25)}
+.tl-icon{font-size:13px;flex-shrink:0;opacity:.7}
+#task-add-input{
   flex:1;border:none;background:transparent;outline:none;
   font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
   color:var(--text-main);
   -webkit-user-select:text;user-select:text;touch-action:manipulation}
-#task-input::placeholder{color:var(--text-dim);opacity:.65;font-weight:600}
-#task-clear{font-size:14px;border:none;background:none;cursor:pointer;
-  color:var(--text-dim);opacity:.55;padding:0 2px;line-height:1;
-  touch-action:manipulation;flex-shrink:0;display:none}
-#task-anchor:focus-within #task-clear{display:block}
+#task-add-input::placeholder{color:var(--text-dim);opacity:.65;font-weight:600}
+
+#task-rows{display:flex;flex-direction:column;padding:4px 8px 8px}
+#task-empty{padding:14px;text-align:center;font-size:11px;font-weight:700;
+  color:var(--text-dim);opacity:.85;line-height:1.6}
+
+.tl-row{
+  border-radius:12px;background:transparent;
+  margin-top:4px;padding:6px 8px;
+  border-left:3px solid transparent;
+  transition:background .14s,border-color .14s}
+.tl-row.active{background:#f0ebff;border-left-color:#7c5cbf}
+.tl-row.active.pulse{animation:tl-pulse 1s ease-out}
+@keyframes tl-pulse{
+  0%{box-shadow:0 0 0 0 rgba(124,92,191,.45)}
+  100%{box-shadow:0 0 0 10px rgba(124,92,191,0)}
+}
+.tl-head{display:flex;align-items:center;gap:7px;cursor:pointer;
+  font-size:12px;font-weight:700;color:var(--text-main);min-height:24px}
+.tl-dot{width:8px;height:8px;border-radius:50%;background:#d4c8f5;flex-shrink:0;
+  transition:background .15s}
+.tl-row.active .tl-dot{background:#7c5cbf;box-shadow:0 0 6px rgba(124,92,191,.5)}
+.tl-row.done .tl-title{text-decoration:line-through;opacity:.5}
+.tl-title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  -webkit-user-select:text;user-select:text;touch-action:manipulation}
+.tl-title[contenteditable=true]{
+  background:#fff;border-radius:6px;padding:2px 6px;
+  outline:1.5px solid #b39ddb;cursor:text;white-space:normal}
+.tl-progress{font-size:10px;color:var(--text-dim);font-weight:800;flex-shrink:0;
+  letter-spacing:.04em}
+.tl-menu-btn{border:none;background:none;cursor:pointer;
+  color:var(--text-dim);opacity:.5;padding:0 2px;font-size:14px;line-height:1;
+  border-radius:6px;flex-shrink:0;touch-action:manipulation}
+.tl-menu-btn:hover{opacity:1;background:rgba(255,255,255,.6)}
+
+.tl-subs{display:none;padding:4px 0 6px 18px;flex-direction:column;gap:3px}
+.tl-row.expanded .tl-subs{display:flex}
+
+.tl-sub{display:flex;align-items:center;gap:7px;font-size:11.5px;
+  font-weight:600;color:var(--text-main);min-height:22px;
+  animation:tl-sub-in .26s cubic-bezier(.34,1.4,.64,1)}
+@keyframes tl-sub-in{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+.tl-check{width:14px;height:14px;border-radius:4px;border:1.5px solid #c4b0f0;
+  background:#fff;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:#fff;
+  transition:background .12s,border-color .12s;touch-action:manipulation}
+.tl-check.on{background:#7c5cbf;border-color:#7c5cbf}
+.tl-check.on::after{content:'✓'}
+.tl-sub-text{flex:1;-webkit-user-select:text;user-select:text;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-sub.done .tl-sub-text{text-decoration:line-through;opacity:.45}
+.tl-sub-text[contenteditable=true]{
+  background:#fff;border-radius:6px;padding:2px 6px;
+  outline:1.5px solid #b39ddb;white-space:normal}
+.tl-sub-del{border:none;background:none;cursor:pointer;color:var(--text-dim);
+  opacity:0;padding:0 2px;font-size:11px;line-height:1;
+  flex-shrink:0;transition:opacity .15s}
+.tl-sub:hover .tl-sub-del{opacity:.6}
+.tl-sub-del:hover{opacity:1}
+
+.tl-actions{display:flex;gap:6px;padding:4px 0 2px 18px;flex-wrap:wrap}
+.tl-btn{padding:3px 10px;border-radius:14px;border:1.5px solid rgba(210,195,255,.7);
+  background:rgba(255,255,255,.75);
+  font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;
+  color:var(--text-main);cursor:pointer;
+  touch-action:manipulation;transition:background .14s,transform .12s}
+.tl-btn:active{transform:scale(.94)}
+.tl-btn:hover{background:#fff}
+.tl-btn.primary{background:linear-gradient(135deg,#b39ddb,#7c5cbf);color:#fff;
+  border-color:transparent;box-shadow:0 2px 6px rgba(124,92,191,.22)}
+.tl-btn.primary:disabled{opacity:.6;cursor:not-allowed}
+
+.tl-shimmer{padding:4px 0 0 18px;display:flex;flex-direction:column;gap:5px}
+.tl-shimmer-row{height:11px;border-radius:5px;
+  background:linear-gradient(90deg,#ece4ff 25%,#dccfff 50%,#ece4ff 75%);
+  background-size:200% 100%;animation:tl-shim 1.2s linear infinite}
+@keyframes tl-shim{from{background-position:200% 0}to{background-position:-200% 0}}
+.tl-shimmer-tip{font-size:10.5px;font-weight:700;color:var(--accent);
+  margin-top:2px;letter-spacing:.04em;padding-left:18px}
+
+.tl-toast{margin:4px 0 2px 18px;padding:5px 10px;border-radius:10px;
+  background:#fff0f0;border:1px solid #f4c0c0;color:#b54b4b;
+  font-size:11px;font-weight:700;display:flex;align-items:center;gap:8px}
+.tl-toast button{border:none;background:none;color:#b54b4b;font-weight:800;
+  cursor:pointer;text-decoration:underline;font-size:11px;padding:0}
+
+.tl-menu-pop{position:absolute;background:#fff;border:1px solid rgba(210,195,255,.7);
+  border-radius:10px;padding:4px;box-shadow:0 6px 18px rgba(120,90,200,.15);
+  z-index:60;min-width:96px;display:flex;flex-direction:column;gap:1px}
+.tl-menu-pop button{border:none;background:none;text-align:left;
+  padding:6px 10px;border-radius:6px;cursor:pointer;
+  font-family:'Nunito',sans-serif;font-size:11.5px;font-weight:700;
+  color:var(--text-main)}
+.tl-menu-pop button:hover{background:#f0ebff}
+.tl-menu-pop button.danger{color:#b54b4b}
+
+/* 番茄完成里的下一步行动按钮 */
+.dlg-row.pet .pomo-next-act{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.dlg-row.pet .pomo-next-act button{padding:4px 10px;border-radius:14px;border:none;
+  font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;
+  touch-action:manipulation;transition:transform .12s}
+.dlg-row.pet .pomo-next-act button:active{transform:scale(.94)}
+.pomo-next-do{background:linear-gradient(135deg,#b39ddb,#7c5cbf);color:#fff;
+  box-shadow:0 2px 6px rgba(124,92,191,.22)}
+.pomo-next-skip{background:rgba(240,235,255,.9);color:var(--text-dim);
+  border:1.5px solid rgba(210,195,255,.7) !important}
 
 /* ═══ POMODORO WIDGET ═══ */
 #pomo-widget{
@@ -541,6 +649,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   <button class="tray-btn" id="tray-close" title="退出">✕</button>
 </div>
 
+<!-- 头顶迷你气泡（仅 pet-mode 显示） -->
+<div id="mini-bubble"></div>
+
 <div id="s-overlay"></div>
 
 <!-- Settings Panel -->
@@ -616,11 +727,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     </div>
   </div>
 
-  <!-- Task anchor -->
-  <div id="task-anchor" title="点击设置当前任务">
-    <span id="task-icon">📌</span>
-    <input id="task-input" type="text" placeholder="现在在做什么？点击设置…" maxlength="40">
-    <button id="task-clear" aria-label="清除任务">✕</button>
+  <!-- Task list -->
+  <div id="task-list">
+    <div id="task-add-row">
+      <span class="tl-icon">📌</span>
+      <input id="task-add-input" type="text" placeholder="加个任务…（回车确认）" maxlength="60">
+    </div>
+    <div id="task-rows"></div>
   </div>
 
   <!-- Pomodoro widget -->
@@ -828,7 +941,7 @@ const fProxy=document.getElementById('f-proxy');
 const frBase=document.getElementById('fr-base');
 const stRow=document.getElementById('st-row');
 const mHint=document.getElementById('model-hint');
-const segBtns=document.querySelectorAll('.seg-b');
+const segBtns=document.querySelectorAll('.seg-b[data-p]');
 let curP=cfg.p;
 
 function openSettings(){
@@ -860,7 +973,7 @@ function updateStatus(){
     <span class="dot"></span>${hasKey()?'API Key 已配置':'未配置，使用内置话术'}
   </span>`;
 }
-segBtns.forEach(b=>b.addEventListener('click',()=>{curP=b.dataset.p;syncSeg();}));
+segBtns.forEach(b=>b.addEventListener('click',()=>{if(!b.dataset.p)return;curP=b.dataset.p;syncSeg();}));
 document.getElementById('settings-btn').addEventListener('click',openSettings);
 document.getElementById('s-close').addEventListener('click',closeSettings);
 overlay.addEventListener('click',closeSettings);
@@ -1020,6 +1133,7 @@ async function send(){
   setHappy(true);spawnHeart(px+55,py+35);
   appendMsg('user',msg,img);
   clearAttachment();
+  localStorage.setItem('zt_lastActivity', Date.now());
 
   if(!hasKey()){
     setTimeout(()=>appendMsg('pet',rand(FALLBACK)),300);
@@ -1143,6 +1257,117 @@ function appendErrorMsg(txt){
   scrollToBottom();
 }
 
+/* ════════ NON-STREAMING JSON REQUEST (for AI 拆解) ════════ */
+async function requestJSON(userPrompt, systemPrompt, opt={}){
+  const timeoutMs=opt.timeoutMs||20000;
+  const isAnthropic=cfg.p==='anthropic';
+  const model=cfg.m||(isAnthropic?DEFAULT_MODEL.anthropic:DEFAULT_MODEL.openai);
+  const url=isAnthropic
+    ?proxify('https://api.anthropic.com/v1/messages')
+    :proxify(buildChatURL(cfg.b||'https://api.openai.com'));
+  const headers=isAnthropic
+    ?{'content-type':'application/json','x-api-key':cfg.k,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'}
+    :{'content-type':'application/json','Authorization':`Bearer ${cfg.k}`};
+  const baseOAI={model,messages:[
+    {role:'system',content:systemPrompt},
+    {role:'user',content:userPrompt}
+  ],max_tokens:400,stream:false};
+  const body=isAnthropic
+    ?JSON.stringify({model,max_tokens:400,system:systemPrompt,
+      messages:[{role:'user',content:userPrompt}]})
+    :JSON.stringify({...baseOAI,response_format:{type:'json_object'}});
+
+  const ctrl=new AbortController();
+  const tid=setTimeout(()=>ctrl.abort(),timeoutMs);
+  let r;
+  try{
+    r=await fetch(url,{method:'POST',headers,body,signal:ctrl.signal});
+  }catch(e){
+    clearTimeout(tid);
+    if(e.name==='AbortError') throw new Error('请求超时');
+    throw new Error('网络连接失败');
+  }
+  clearTimeout(tid);
+  // OpenAI 不支持 response_format 时回退一次
+  if(!r.ok && !isAnthropic){
+    try{
+      const fb=JSON.stringify(baseOAI);
+      r=await fetch(url,{method:'POST',headers,body:fb});
+    }catch(e){throw new Error('网络连接失败');}
+  }
+  if(!r.ok){
+    const e=await r.json().catch(()=>({}));
+    throw new Error(e?.error?.message||`HTTP ${r.status}`);
+  }
+  const data=await r.json();
+  if(isAnthropic) return data?.content?.[0]?.text || '';
+  return data?.choices?.[0]?.message?.content || '';
+}
+
+function parseStepsLoose(s){
+  if(!s) return [];
+  let txt=String(s).trim();
+  // 剥代码围栏
+  txt=txt.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+  // 1) 直接 JSON.parse
+  try{
+    const obj=JSON.parse(txt);
+    if(Array.isArray(obj?.steps)) return obj.steps.map(x=>String(x)).map(t=>t.trim()).filter(Boolean).slice(0,5);
+    if(Array.isArray(obj)) return obj.map(x=>String(x)).map(t=>t.trim()).filter(Boolean).slice(0,5);
+  }catch(_){}
+  // 2) 抓首个 { ... }
+  const m=txt.match(/\{[\s\S]*\}/);
+  if(m){
+    try{
+      const obj=JSON.parse(m[0]);
+      if(Array.isArray(obj?.steps)) return obj.steps.map(x=>String(x)).map(t=>t.trim()).filter(Boolean).slice(0,5);
+    }catch(_){}
+  }
+  // 3) 按行切，剥 markdown 标记
+  const lines=txt.split(/\r?\n/).map(l=>{
+    return l.replace(/^[\s\-\*•·]+/,'').replace(/^\d+[\.\)、]\s*/,'').replace(/^["「『]/,'').replace(/["」』]$/,'').trim();
+  }).filter(Boolean);
+  return lines.slice(0,5);
+}
+
+const BREAKDOWN_SYS = `You break a task into 3-5 concrete, sequential, actionable steps.
+Output ONLY JSON, no prose, no code fences:
+{"steps":["step1","step2","step3"]}
+Each step: imperative, <=20 chars (Chinese) or <=40 chars (English),
+specific enough to start in <2 minutes. Match the language of the input.`;
+
+async function requestBreakdown(taskId, confirmReplace){
+  const t=TaskStore.state.tasks.find(x=>x.id===taskId);
+  if(!t) return;
+  if(!hasKey()){
+    _toastByTaskId[taskId]='请先在设置里配置 API Key';
+    renderTasks();return;
+  }
+  // 已有子步骤 → 弹框确认替换
+  if(!confirmReplace && t.subtasks.length>0){
+    if(!confirm(`「${t.title}」已经有 ${t.subtasks.length} 个子步骤，要替换成新的拆解结果吗？`)) return;
+  }
+  _aiBusyTaskId=taskId;
+  delete _toastByTaskId[taskId];
+  renderTasks();
+  try{
+    const raw=await requestJSON(t.title, BREAKDOWN_SYS, {timeoutMs:20000});
+    const steps=parseStepsLoose(raw);
+    if(!steps.length){
+      _toastByTaskId[taskId]='AI 没返回有效结果';
+    } else {
+      TaskStore.setSubtasks(taskId, steps);
+    }
+  }catch(e){
+    _toastByTaskId[taskId]='拆解失败：'+(e.message||'未知错误');
+  }finally{
+    _aiBusyTaskId=null;
+    renderTasks();
+  }
+}
+
 sendBtn.addEventListener('click',send);
 chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
 chatInput.addEventListener('input',()=>{chatInput.style.height='auto';chatInput.style.height=Math.min(chatInput.scrollHeight,110)+'px';});
@@ -1184,20 +1409,359 @@ if(imgPreviewRemove){
   imgPreviewRemove.addEventListener('click', clearAttachment);
 }
 
-/* ════════ TASK ANCHOR ════════ */
-const taskInput=document.getElementById('task-input');
-const taskClearBtn=document.getElementById('task-clear');
-let currentTask='';
+/* ════════ TASK STORE ════════ */
+const TASKS_KEY='zt_tasks_v1';
+const MAX_TASKS=20, MAX_SUBS=8, MAX_TITLE=60;
 
-taskInput.addEventListener('input',()=>{
-  currentTask=taskInput.value.trim();
-  taskClearBtn.style.display=currentTask?'block':'none';
+const TaskStore = (()=>{
+  let state={version:1,activeId:null,tasks:[]};
+  const subs=[];
+  let saveTimer=null;
+
+  function genId(p){return p+'_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3);}
+  function notify(){subs.forEach(fn=>{try{fn(state);}catch(e){console.error(e);}});}
+  function scheduleSave(){
+    if(saveTimer) clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>{
+      try{localStorage.setItem(TASKS_KEY,JSON.stringify(state));}catch(e){console.error(e);}
+      // 镜像写回 zt_task：active 任务的 title（兼容已发布的气泡逻辑）
+      const a=getActive();
+      localStorage.setItem('zt_task', a?a.title:'');
+    },200);
+  }
+  function getActive(){return state.tasks.find(t=>t.id===state.activeId)||null;}
+  function load(){
+    try{
+      const raw=localStorage.getItem(TASKS_KEY);
+      if(raw){state=JSON.parse(raw); if(!state.tasks)state.tasks=[]; return;}
+    }catch(e){console.warn('TaskStore load failed',e);}
+    // 迁移：旧 zt_task 字符串 → 第一条任务
+    const old=(localStorage.getItem('zt_task')||'').trim();
+    if(old){
+      const t={id:genId('t'),title:old.slice(0,MAX_TITLE),subtasks:[],createdAt:Date.now(),done:false};
+      state={version:1,activeId:t.id,tasks:[t]};
+      scheduleSave();
+    }
+  }
+
+  function addTask(title){
+    title=(title||'').trim().slice(0,MAX_TITLE);
+    if(!title) return null;
+    if(state.tasks.length>=MAX_TASKS) return null;
+    const t={id:genId('t'),title,subtasks:[],createdAt:Date.now(),done:false};
+    state.tasks.unshift(t);
+    state.activeId=t.id;
+    scheduleSave();notify();
+    return t;
+  }
+  function removeTask(id){
+    const i=state.tasks.findIndex(t=>t.id===id);
+    if(i<0) return;
+    state.tasks.splice(i,1);
+    if(state.activeId===id){
+      state.activeId=state.tasks[0]?state.tasks[0].id:null;
+    }
+    scheduleSave();notify();
+  }
+  function renameTask(id,title){
+    const t=state.tasks.find(x=>x.id===id);if(!t) return;
+    t.title=(title||'').trim().slice(0,MAX_TITLE);
+    scheduleSave();notify();
+  }
+  function setActive(id){
+    if(state.activeId===id) return;
+    state.activeId=id;
+    scheduleSave();notify();
+  }
+  function setTaskDone(id,done){
+    const t=state.tasks.find(x=>x.id===id);if(!t) return;
+    t.done=!!done;
+    scheduleSave();notify();
+  }
+  function setSubtasks(id,arr){
+    const t=state.tasks.find(x=>x.id===id);if(!t) return;
+    t.subtasks=arr.slice(0,MAX_SUBS).map(text=>({
+      id:genId('s'),text:String(text||'').trim().slice(0,80),done:false
+    })).filter(s=>s.text);
+    scheduleSave();notify();
+  }
+  function addSub(id,text){
+    const t=state.tasks.find(x=>x.id===id);if(!t) return;
+    if(t.subtasks.length>=MAX_SUBS) return;
+    text=(text||'').trim().slice(0,80);
+    if(!text) return;
+    t.subtasks.push({id:genId('s'),text,done:false});
+    scheduleSave();notify();
+  }
+  function renameSub(taskId,subId,text){
+    const t=state.tasks.find(x=>x.id===taskId);if(!t) return;
+    const s=t.subtasks.find(x=>x.id===subId);if(!s) return;
+    s.text=(text||'').trim().slice(0,80);
+    scheduleSave();notify();
+  }
+  function toggleSub(taskId,subId){
+    const t=state.tasks.find(x=>x.id===taskId);if(!t) return;
+    const s=t.subtasks.find(x=>x.id===subId);if(!s) return;
+    s.done=!s.done;
+    scheduleSave();notify();
+  }
+  function removeSub(taskId,subId){
+    const t=state.tasks.find(x=>x.id===taskId);if(!t) return;
+    t.subtasks=t.subtasks.filter(x=>x.id!==subId);
+    scheduleSave();notify();
+  }
+  function nextUnchecked(taskId){
+    const t=state.tasks.find(x=>x.id===taskId);if(!t) return null;
+    return t.subtasks.find(s=>!s.done)||null;
+  }
+  function onChange(fn){subs.push(fn);return ()=>{const i=subs.indexOf(fn);if(i>=0)subs.splice(i,1);};}
+
+  load();
+  // 跨窗口同步：另一个窗口写了 zt_tasks_v1 时，本窗口刷新
+  window.addEventListener('storage', e=>{
+    if(e.key===TASKS_KEY){
+      try{
+        const next=e.newValue?JSON.parse(e.newValue):{version:1,activeId:null,tasks:[]};
+        if(next && Array.isArray(next.tasks)){state=next; notify();}
+      }catch(_){}
+    }
+  });
+  return {get state(){return state;}, getActive, addTask, removeTask, renameTask,
+    setActive, setTaskDone, setSubtasks, addSub, renameSub, toggleSub, removeSub,
+    nextUnchecked, onChange};
+})();
+
+// `currentTask` 是只读的兼容引用：任何旧代码读它，都能拿到 active 任务的标题
+Object.defineProperty(window,'currentTask',{
+  get(){return TaskStore.getActive()?.title || '';}
 });
-taskInput.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
-taskInput.addEventListener('mousedown',e=>e.stopPropagation());
-taskClearBtn.addEventListener('click',()=>{
-  taskInput.value='';currentTask='';taskClearBtn.style.display='none';taskInput.focus();
-});
+
+/* ════════ TASK LIST UI ════════ */
+const taskListEl=document.getElementById('task-list');
+const taskRowsEl=document.getElementById('task-rows');
+const taskAddInput=document.getElementById('task-add-input');
+
+if(taskAddInput){
+  taskAddInput.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
+  taskAddInput.addEventListener('mousedown',e=>e.stopPropagation());
+  taskAddInput.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      e.preventDefault();
+      const v=taskAddInput.value.trim();
+      if(!v) return;
+      const t=TaskStore.addTask(v);
+      if(!t){
+        taskAddInput.placeholder=`已达上限 ${MAX_TASKS} 个任务`;
+        setTimeout(()=>{taskAddInput.placeholder='加个任务…（回车确认）';},2000);
+        return;
+      }
+      taskAddInput.value='';
+      localStorage.setItem('zt_lastActivity', Date.now());
+    }
+  });
+}
+
+let _expandedTaskId=null; // 仅 active 默认展开；用户可单独展开其他任务
+function isExpanded(taskId, isActive){
+  return _expandedTaskId===taskId || (isActive && _expandedTaskId===null);
+}
+
+let _aiBusyTaskId=null;
+let _toastByTaskId={}; // {taskId: 'msg'}
+
+function escAttr(s){return String(s||'').replace(/"/g,'&quot;');}
+
+function renderTasks(){
+  if(!taskRowsEl) return;
+  const {tasks,activeId}=TaskStore.state;
+  if(!tasks.length){
+    taskRowsEl.innerHTML='<div id="task-empty">点 + 加第一个任务，让我陪你专注 🐨</div>';
+    return;
+  }
+  // 排序：active 置顶，然后按 createdAt 倒序
+  const ordered=[...tasks].sort((a,b)=>{
+    if(a.id===activeId) return -1;
+    if(b.id===activeId) return 1;
+    return b.createdAt-a.createdAt;
+  });
+  taskRowsEl.innerHTML='';
+  ordered.forEach(t=>{
+    const isAct=t.id===activeId;
+    const exp=isExpanded(t.id, isAct);
+    const total=t.subtasks.length;
+    const done=t.subtasks.filter(s=>s.done).length;
+    const row=document.createElement('div');
+    row.className='tl-row'+(isAct?' active':'')+(t.done?' done':'')+(exp?' expanded':'');
+    row.dataset.id=t.id;
+
+    const progress = total>0 ? `<span class="tl-progress">${done}/${total}</span>` : '';
+    row.innerHTML = `
+      <div class="tl-head" data-act="activate">
+        <span class="tl-dot"></span>
+        <span class="tl-title" data-act="title">${escHtml(t.title)}</span>
+        ${progress}
+        <button class="tl-menu-btn" data-act="menu" aria-label="任务菜单">⋯</button>
+      </div>
+      <div class="tl-subs">
+        ${t.subtasks.map(s=>`
+          <div class="tl-sub${s.done?' done':''}" data-sub-id="${escAttr(s.id)}">
+            <div class="tl-check${s.done?' on':''}" data-act="toggle"></div>
+            <span class="tl-sub-text" data-act="sub-text">${escHtml(s.text)}</span>
+            <button class="tl-sub-del" data-act="sub-del" aria-label="删除">✕</button>
+          </div>
+        `).join('')}
+        ${_aiBusyTaskId===t.id ? `
+          <div class="tl-shimmer">
+            <div class="tl-shimmer-row" style="width:80%"></div>
+            <div class="tl-shimmer-row" style="width:60%"></div>
+            <div class="tl-shimmer-row" style="width:72%"></div>
+            <div class="tl-shimmer-tip">✦ AI 正在拆解…</div>
+          </div>
+        ` : ''}
+        ${_toastByTaskId[t.id] ? `
+          <div class="tl-toast">
+            <span>${escHtml(_toastByTaskId[t.id])}</span>
+            <button data-act="retry">重试</button>
+            <button data-act="toast-close">关</button>
+          </div>
+        ` : ''}
+        <div class="tl-actions">
+          ${(hasKey() && _aiBusyTaskId!==t.id) ? `<button class="tl-btn primary" data-act="ai">✦ AI 帮我拆</button>`:''}
+          ${t.subtasks.length<MAX_SUBS ? `<button class="tl-btn" data-act="add-sub">+ 子步骤</button>`:''}
+        </div>
+      </div>
+    `;
+    taskRowsEl.appendChild(row);
+  });
+}
+
+// 委托点击
+if(taskRowsEl){
+  taskRowsEl.addEventListener('click',e=>{
+    const row=e.target.closest('.tl-row');
+    if(!row) return;
+    const taskId=row.dataset.id;
+    const act=e.target.closest('[data-act]')?.dataset.act;
+
+    if(act==='menu'){ e.stopPropagation(); openTaskMenu(e.currentTarget, e.target.closest('.tl-menu-btn'), taskId); return; }
+    if(act==='toggle'){
+      const subId=e.target.closest('.tl-sub')?.dataset.subId;
+      if(subId) TaskStore.toggleSub(taskId,subId);
+      localStorage.setItem('zt_lastActivity', Date.now());
+      return;
+    }
+    if(act==='sub-del'){
+      const subId=e.target.closest('.tl-sub')?.dataset.subId;
+      if(subId) TaskStore.removeSub(taskId,subId);
+      return;
+    }
+    if(act==='sub-text'){
+      e.stopPropagation();
+      const subId=e.target.closest('.tl-sub')?.dataset.subId;
+      makeEditable(e.target, txt=>TaskStore.renameSub(taskId,subId,txt));
+      return;
+    }
+    if(act==='title'){
+      e.stopPropagation();
+      makeEditable(e.target, txt=>TaskStore.renameTask(taskId,txt));
+      return;
+    }
+    if(act==='ai'){
+      e.stopPropagation();
+      requestBreakdown(taskId, /*confirmReplace=*/false);
+      return;
+    }
+    if(act==='retry'){
+      e.stopPropagation();
+      delete _toastByTaskId[taskId];
+      requestBreakdown(taskId, false);
+      return;
+    }
+    if(act==='toast-close'){
+      e.stopPropagation();
+      delete _toastByTaskId[taskId];
+      renderTasks();
+      return;
+    }
+    if(act==='add-sub'){
+      e.stopPropagation();
+      const text=prompt('新的子步骤：');
+      if(text) TaskStore.addSub(taskId,text);
+      return;
+    }
+    if(act==='activate'){
+      // 切换 active；若已是 active，则切换展开
+      if(TaskStore.state.activeId===taskId){
+        _expandedTaskId = (_expandedTaskId===taskId) ? '__none__' : taskId;
+        renderTasks();
+      } else {
+        _expandedTaskId=null; // 让新 active 默认展开
+        TaskStore.setActive(taskId);
+        localStorage.setItem('zt_lastActivity', Date.now());
+      }
+    }
+  });
+}
+
+function makeEditable(span, onCommit){
+  if(span.getAttribute('contenteditable')==='true') return;
+  const orig=span.textContent;
+  span.setAttribute('contenteditable','true');
+  span.focus();
+  // 选中全部
+  const sel=window.getSelection(); const r=document.createRange();
+  r.selectNodeContents(span); sel.removeAllRanges(); sel.addRange(r);
+  function commit(){
+    span.removeAttribute('contenteditable');
+    const v=span.textContent.trim();
+    span.textContent=v || orig;
+    if(v && v!==orig) onCommit(v);
+    span.removeEventListener('blur',commit);
+    span.removeEventListener('keydown',onKey);
+  }
+  function onKey(e){
+    if(e.key==='Enter'){e.preventDefault(); span.blur();}
+    if(e.key==='Escape'){span.textContent=orig; span.blur();}
+  }
+  span.addEventListener('blur',commit);
+  span.addEventListener('keydown',onKey);
+}
+
+let _menuPop=null;
+function closeMenu(){if(_menuPop){_menuPop.remove();_menuPop=null;}}
+document.addEventListener('click',closeMenu);
+
+function openTaskMenu(container, btn, taskId){
+  closeMenu();
+  const t=TaskStore.state.tasks.find(x=>x.id===taskId);if(!t) return;
+  _menuPop=document.createElement('div');
+  _menuPop.className='tl-menu-pop';
+  _menuPop.innerHTML=`
+    <button data-m="rename">重命名</button>
+    <button data-m="toggle-done">${t.done?'恢复':'标记完成'}</button>
+    <button data-m="delete" class="danger">删除任务</button>
+  `;
+  document.body.appendChild(_menuPop);
+  const r=btn.getBoundingClientRect();
+  _menuPop.style.top=(r.bottom+4)+'px';
+  _menuPop.style.left=Math.max(8, r.right-_menuPop.offsetWidth)+'px';
+  _menuPop.addEventListener('click',e=>{
+    e.stopPropagation();
+    const m=e.target.dataset.m;
+    if(m==='rename'){
+      const titleEl=container.querySelector(`.tl-row[data-id="${taskId}"] .tl-title`);
+      if(titleEl) makeEditable(titleEl, txt=>TaskStore.renameTask(taskId,txt));
+    } else if(m==='toggle-done'){
+      TaskStore.setTaskDone(taskId, !t.done);
+    } else if(m==='delete'){
+      if(confirm(`删除任务「${t.title}」？`)) TaskStore.removeTask(taskId);
+    }
+    closeMenu();
+  });
+}
+
+TaskStore.onChange(renderTasks);
+renderTasks();
 
 /* ════════ POMODORO ════════ */
 const POMO_WORK=25*60, POMO_BREAK=5*60;
@@ -1237,8 +1801,14 @@ function pomoComplete(){
     pomoCount++;
     pomoMode='break';pomoLeft=POMO_BREAK;pomoTotal=POMO_BREAK;
     spawnHeart(px+55,py+35);
-    const tasks=currentTask?`「${currentTask}」专注完成！`:'专注完成！';
-    appendMsg('pet',`${tasks} 休息 5 分钟吧 🌸\n深呼吸，动动手脚～`);
+    const act=TaskStore.getActive();
+    const head=act?`「${act.title}」专注完成！🌸`:'专注完成！🌸';
+    const next=act?TaskStore.nextUnchecked(act.id):null;
+    if(next){
+      appendPomoNext(head, act.id, next.id, next.text);
+    } else {
+      appendMsg('pet',`${head}\n休息 5 分钟，深呼吸～`);
+    }
   } else {
     pomoMode='work';pomoLeft=POMO_WORK;pomoTotal=POMO_WORK;
     appendMsg('pet','休息结束啦 💜\n准备好继续了吗？');
@@ -1246,11 +1816,58 @@ function pomoComplete(){
   renderPomo();
 }
 
+// 在对话框里加一条带「完成这步」「跳过」按钮的特殊消息
+function appendPomoNext(head, taskId, subId, subText){
+  showDialog();
+  const row=document.createElement('div');
+  row.className='dlg-row pet';
+  row.innerHTML=`
+    <div class="dlg-avatar">🍅</div>
+    <div class="dlg-msg-wrap">
+      <div class="dlg-bubble"></div>
+      <div class="dlg-time">${fmtTime(new Date())}</div>
+    </div>`;
+  dlgMsgs.appendChild(row);
+  const bubble=row.querySelector('.dlg-bubble');
+  const doneList=[]; // 已经在这条消息里勾掉的子步骤文本
+
+  function render(currentSub){
+    const checks=doneList.map(t=>`<div style="color:#7c5cbf">✓ ${escHtml(t)}</div>`).join('');
+    if(currentSub){
+      bubble.innerHTML=`${escHtml(head)}${checks}<br>下一步：<b>${escHtml(currentSub.text)}</b>
+        <div class="pomo-next-act">
+          <button class="pomo-next-do">✓ 完成这步</button>
+          <button class="pomo-next-skip">跳过</button>
+        </div>`;
+      bubble.querySelector('.pomo-next-do').addEventListener('click',()=>{
+        TaskStore.toggleSub(taskId,currentSub.id);
+        doneList.push(currentSub.text);
+        const nxt=TaskStore.nextUnchecked(taskId);
+        render(nxt);
+      });
+      bubble.querySelector('.pomo-next-skip').addEventListener('click',()=>{
+        bubble.querySelector('.pomo-next-act')?.remove();
+      });
+    } else {
+      bubble.innerHTML=`${escHtml(head)}${checks}<br>🎉 全部完成！休息 5 分钟吧 🌸`;
+    }
+  }
+  render({id:subId, text:subText});
+  scrollToBottom();
+}
+
 pomoStartBtn.addEventListener('click',()=>{
   if(pomoRunning){
     clearInterval(pomoTick);pomoTick=null;pomoRunning=false;
   } else {
     pomoRunning=true;
+    // 给 active 任务行加 1s 紫色脉冲，让用户确认目标
+    const activeId=TaskStore.state.activeId;
+    if(activeId){
+      const r=document.querySelector(`.tl-row[data-id="${activeId}"]`);
+      if(r){r.classList.remove('pulse'); void r.offsetWidth; r.classList.add('pulse');
+        setTimeout(()=>r.classList.remove('pulse'),1100);}
+    }
     pomoTick=setInterval(()=>{
       pomoLeft--;
       if(pomoLeft<=0) pomoComplete();
@@ -1281,43 +1898,64 @@ const IDLE_INTERVAL=15000+Math.random()*15000; // first idle message sooner
 function checkinMsg(){
   const now=new Date();
   const hm=now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});
-  if(currentTask){
+  const act = TaskStore.getActive();
+  if(act){
+    const next = TaskStore.nextUnchecked(act.id);
+    if(next){
+      const msgs=[
+        `${hm} ✨\n下一步：${next.text}`,
+        `${hm} 了 🌙\n要不要做「${next.text}」？`,
+        `${hm} ☁️\n「${act.title}」下一步：${next.text}`,
+      ];
+      return rand(msgs);
+    }
     const msgs=[
-      `现在是 ${hm} ☁️\n你还在做「${currentTask}」吗？`,
-      `${hm} 了 🌙\n「${currentTask}」进展怎么样？`,
-      `时间到 ${hm} 啦 ✨\n还好吗，还在做「${currentTask}」？`,
+      `${hm} ☁️\n你还在做「${act.title}」吗？`,
+      `${hm} 了 🌙\n「${act.title}」进展怎么样？`,
+      `${hm} ✨\n还好吗，还在做「${act.title}」？`,
     ];
     return rand(msgs);
   } else {
     const msgs=[
-      `现在是 ${hm} 🕐\n你在做什么呢？`,
+      `${hm} 🕐\n你在做什么呢？`,
       `${hm} 了，注意时间哦 🌸`,
-      `现在 ${hm}，还好吗？ 💜`,
+      `${hm}，还好吗？ 💜`,
     ];
     return rand(msgs);
   }
 }
 
-// Periodic check-in (respects freq setting)
-setInterval(()=>{
-  if(!busy && (cfg.freq||'mid')!=='off') appendMsg('pet',checkinMsg());
-},CHECK_INTERVAL);
+// 自动提醒 — 只在宠物窗口触发，且只走头顶气泡（不进聊天对话框、不污染 AI 上下文）
+const _isPetWin = !new URLSearchParams(window.location.search).get('mode');
+// 占位函数，pet-mode 块加载后会被替换为真实的 showMini 调用
+let _bubblePush = ()=>{};
 
-// Idle: frequency driven by cfg.freq
-const FREQ_MS={off:null, low:4*60*1000, mid:2.5*60*1000, high:90*1000};
-const FREQ_JITTER={off:0, low:2*60*1000, mid:60*1000, high:60*1000};
-function scheduleIdle(){
-  const base=FREQ_MS[cfg.freq||'mid'];
-  if(base===null){setTimeout(scheduleIdle,30*1000);return;} // off: re-check every 30s
-  setTimeout(()=>{
-    if(!busy && (cfg.freq||'mid')!=='off'){
-      const msg=Math.random()<0.4?rand(ADHD_TIPS):rand(FALLBACK);
-      appendMsg('pet',msg);
-    }
-    scheduleIdle();
-  },base+Math.random()*FREQ_JITTER[cfg.freq||'mid']);
+if(_isPetWin){
+  // 周期性招呼（默认 8 分钟）
+  setInterval(()=>{
+    if(!busy && (cfg.freq||'mid')!=='off') _bubblePush(checkinMsg());
+  },CHECK_INTERVAL);
+
+  // 闲置提示：频率受 cfg.freq 控制
+  const FREQ_MS={off:null, low:4*60*1000, mid:2.5*60*1000, high:90*1000};
+  const FREQ_JITTER={off:0, low:2*60*1000, mid:60*1000, high:60*1000};
+  function scheduleIdle(first){
+    const base = first ? 30*1000 : FREQ_MS[cfg.freq||'mid'];
+    if(base===null){setTimeout(scheduleIdle,30*1000);return;}
+    const jitter = first ? 5000 : FREQ_JITTER[cfg.freq||'mid'];
+    setTimeout(()=>{
+      // 即使 freq=off，第一次也弹一下，让用户知道有提醒
+      if(!busy && (first || (cfg.freq||'mid')!=='off')){
+        const msg = currentTask
+          ? checkinMsg()
+          : (Math.random()<0.4?rand(ADHD_TIPS):rand(FALLBACK));
+        _bubblePush(msg);
+      }
+      scheduleIdle(false);
+    }, base + Math.random()*jitter);
+  }
+  scheduleIdle(true); // 第一次 30s 内弹出
 }
-scheduleIdle();
 
 
 
@@ -1527,11 +2165,21 @@ if(IS_ELECTRON && IS_CHAT_MODE){
   const miniBubble = document.getElementById('mini-bubble');
   let miniTimer = null;
   function showMini(msg){
+    if(!miniBubble){console.warn('mini-bubble element missing');return;}
     if(miniTimer) clearTimeout(miniTimer);
     miniBubble.textContent = msg;
     miniBubble.classList.add('show');
-    miniTimer = setTimeout(()=>miniBubble.classList.remove('show'), 4000);
+    miniTimer = setTimeout(()=>miniBubble.classList.remove('show'), 10000);
   }
+  // 让自动提醒走头顶气泡，超长文本截断
+  _bubblePush = (msg)=>{
+    if(!msg) return;
+    const t = msg.length>55 ? msg.slice(0,53)+'…' : msg;
+    showMini(t);
+    localStorage.setItem('zt_lastActivity', Date.now());
+  };
+  // 上线问候——让用户立刻确认气泡能弹出
+  setTimeout(()=>showMini('我上线啦 🐨\n陪你专注～'), 4000);
 
   /* ── Pixel-perfect click-through ── */
   const petImg = document.getElementById('pet-img');
@@ -1605,6 +2253,56 @@ if(IS_ELECTRON && IS_CHAT_MODE){
       showMini(text.length>55 ? text.slice(0,53)+'…' : text);
     }
   };
+
+  /* ── 主动冒泡提醒：闲置超时后提醒当前任务 ── */
+  // 各频率对应的闲置阈值（毫秒）
+  const IDLE_THRESHOLDS = { off: null, low: 20*60*1000, mid: 10*60*1000, high: 5*60*1000 };
+  const IDLE_REMIND_MSGS = [
+    '你还在做「{t}」吗？ 💜',
+    '「{t}」进展怎么样了？',
+    '嘿，别忘了「{t}」哦 🌸',
+    '「{t}」加油！我在陪着你 ✨',
+    '还好吗？「{t}」还等着你呢 🐨',
+    '休息够了就继续「{t}」吧～',
+  ];
+  // 初始化活跃时间（冷启动时不立刻提醒）
+  if(!localStorage.getItem('zt_lastActivity')){
+    localStorage.setItem('zt_lastActivity', Date.now());
+  }
+  // 点击宠物也算活跃
+  const _origShowMini = showMini;
+  showMini = function(msg){
+    localStorage.setItem('zt_lastActivity', Date.now());
+    _origShowMini(msg);
+  };
+
+  setInterval(()=>{
+    const freq = cfg.freq || 'mid';
+    const threshold = IDLE_THRESHOLDS[freq];
+    if(threshold === null) return; // 关闭提醒
+    const act = TaskStore.getActive();
+    if(!act) return; // 没有设置任务
+    const lastAct = parseInt(localStorage.getItem('zt_lastActivity') || '0');
+    const idle = Date.now() - lastAct;
+    if(idle >= threshold){
+      const next = TaskStore.nextUnchecked(act.id);
+      let msg;
+      if(next){
+        // 优先提醒下一个具体子步骤
+        const tpls = [
+          `下一步：${next.text} ✨`,
+          `还差「${next.text}」一步～`,
+          `「${next.text}」加油 💜`,
+        ];
+        msg = tpls[Math.floor(Math.random()*tpls.length)];
+      } else {
+        const tpl = IDLE_REMIND_MSGS[Math.floor(Math.random()*IDLE_REMIND_MSGS.length)];
+        msg = tpl.replace('{t}', act.title);
+      }
+      showMini(msg);
+      localStorage.setItem('zt_lastActivity', Date.now());
+    }
+  }, 60*1000);
 }
 
 })();

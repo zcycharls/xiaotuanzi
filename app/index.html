@@ -181,11 +181,17 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 #s-panel.open{transform:translateY(0)}
 
 .sh-handle{width:38px;height:4px;background:#ddd5f8;border-radius:2px;margin:14px auto 0}
-.sh-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 8px}
+#s-header-drag{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 8px;-webkit-app-region:drag;cursor:grab}
+#s-header-drag:active{cursor:grabbing}
 .sh-title{font-size:18px;font-weight:800;color:var(--text-main)}
+#s-header-btns{display:flex;align-items:center;gap:6px;-webkit-app-region:no-drag}
+#s-minimize{width:28px;height:28px;border-radius:50%;border:none;background:#f0ebff;
+  font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--text-dim);touch-action:manipulation;-webkit-app-region:no-drag}
+#s-minimize:active{background:#e2d8ff}
 #s-close{width:32px;height:32px;border-radius:50%;border:none;background:#f0ebff;
   font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:var(--text-dim);touch-action:manipulation}
+  color:var(--text-dim);touch-action:manipulation;-webkit-app-region:no-drag}
 #s-close:active{background:#e2d8ff}
 .sh-body{padding:4px 22px 28px}
 .seg-lbl{font-size:11px;font-weight:800;color:var(--text-dim);letter-spacing:.07em;
@@ -296,7 +302,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:linear-gradient(135deg,#c8b5f5,#b09ae0);
   display:flex;align-items:center;justify-content:center;font-size:12px;
   flex-shrink:0}
-#dlg-header-btns{display:flex;align-items:center;gap:6px;flex-shrink:0}
+#dlg-header-btns{display:flex;align-items:center;gap:6px;flex-shrink:0;pointer-events:auto}
 #dlg-clear{
   padding:4px 11px;border-radius:20px;border:none;
   background:rgba(240,235,255,.8);
@@ -305,6 +311,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   white-space:nowrap;
   transition:background .18s}
 #dlg-clear:active{background:#e2d8ff}
+#dlg-minimize{
+  padding:4px 11px;border-radius:20px;border:none;
+  background:rgba(240,235,255,.8);
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;
+  color:var(--text-dim);cursor:pointer;touch-action:manipulation;
+  white-space:nowrap;z-index:60;
+  transition:background .18s;width:28px;height:28px;display:flex;align-items:center;justify-content:center;pointer-events:auto}
+#dlg-minimize:active{background:#e2d8ff}
 
 /* message list */
 #dlg-msgs{
@@ -657,9 +671,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <!-- Settings Panel -->
 <div id="s-panel" role="dialog" aria-modal="true" aria-label="API 设置">
   <div class="sh-handle"></div>
-  <div class="sh-header">
+  <div class="sh-header" id="s-header-drag">
     <span class="sh-title">🔧 API 设置</span>
-    <button id="s-close" aria-label="关闭">✕</button>
+    <div id="s-header-btns">
+      <button id="s-minimize" aria-label="最小化" title="最小化">−</button>
+      <button id="s-close" aria-label="关闭">✕</button>
+    </div>
   </div>
   <div class="sh-body">
     <div class="seg-lbl">API 提供商</div>
@@ -704,6 +721,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <span class="hint" style="margin-top:6px;display:block">专注时建议选"低"或"关闭"</span>
 
     <button id="save-btn">保存并连接 ✦</button>
+
+    <div class="seg-lbl" style="margin-top:22px">📝 日志</div>
+    <div id="log-container" style="background:#1a1a2e;border-radius:12px;padding:12px;height:150px;overflow-y:auto;font-family:monospace;font-size:11px;color:#a0a0b0;white-space:pre-wrap;word-break:break-all;">暂无日志</div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button id="log-copy" style="flex:1;padding:8px 12px;border-radius:8px;border:none;background:rgba(240,235,255,.8);font-family:Nunito,sans-serif;font-size:12px;font-weight:700;color:#9b8cc0;cursor:pointer;">复制日志</button>
+      <button id="log-clear" style="flex:1;padding:8px 12px;border-radius:8px;border:none;background:rgba(240,235,255,.8);font-family:Nunito,sans-serif;font-size:12px;font-weight:700;color:#9b8cc0;cursor:pointer;">清除日志</button>
+    </div>
   </div>
 </div>
 
@@ -724,6 +748,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div id="dlg-header-btns">
       <button id="pomo-toggle" aria-label="番茄钟">🍅 专注</button>
       <button id="dlg-clear">清空</button>
+      <button id="dlg-minimize" onclick="window.petBridge.minimizeWindow();" aria-label="最小化" title="最小化">−</button>
     </div>
   </div>
 
@@ -976,8 +1001,41 @@ function updateStatus(){
 segBtns.forEach(b=>b.addEventListener('click',()=>{if(!b.dataset.p)return;curP=b.dataset.p;syncSeg();}));
 document.getElementById('settings-btn').addEventListener('click',openSettings);
 document.getElementById('s-close').addEventListener('click',closeSettings);
+document.getElementById('s-minimize').addEventListener('click',(e)=>{e.stopPropagation();if(window.petBridge)window.petBridge.minimizeWindow();});
 overlay.addEventListener('click',closeSettings);
+let _logs = [];
+function addLog(msg){
+  const now = new Date();
+  const timeStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+  _logs.push(`[${timeStr}] ${msg}`);
+  if(_logs.length > 100) _logs.shift();
+  const logContainer = document.getElementById('log-container');
+  if(logContainer){
+    logContainer.textContent = _logs.join('\n');
+    logContainer.scrollTop = logContainer.scrollHeight;
+  }
+}
+document.getElementById('log-copy').addEventListener('click',()=>{
+  const logContainer = document.getElementById('log-container');
+  if(logContainer){
+    navigator.clipboard.writeText(logContainer.textContent).then(()=>{
+      addLog('日志已复制到剪贴板');
+    }).catch(e=>{
+      addLog('复制失败: '+e.message);
+    });
+  }
+});
+document.getElementById('log-clear').addEventListener('click',()=>{
+  _logs = [];
+  const logContainer = document.getElementById('log-container');
+  if(logContainer) logContainer.textContent = '暂无日志';
+  addLog('日志已清除');
+});
+
+addLog('小团子启动');
+
 document.getElementById('save-btn').addEventListener('click',()=>{
+  addLog('保存配置');
   cfg={p:curP,k:fKey.value.trim(),m:fModel.value.trim(),
     b:fBase.value.trim().replace(/\/+$/,''),proxy:fProxy.checked,freq:cfg.freq||'mid'};
   save();history=[];closeSettings();
@@ -1259,7 +1317,7 @@ function appendErrorMsg(txt){
 
 /* ════════ NON-STREAMING JSON REQUEST (for AI 拆解) ════════ */
 async function requestJSON(userPrompt, systemPrompt, opt={}){
-  const timeoutMs=opt.timeoutMs||20000;
+  const timeoutMs=opt.timeoutMs||120000;
   const isAnthropic=cfg.p==='anthropic';
   const model=cfg.m||(isAnthropic?DEFAULT_MODEL.anthropic:DEFAULT_MODEL.openai);
   const url=isAnthropic
@@ -1273,30 +1331,21 @@ async function requestJSON(userPrompt, systemPrompt, opt={}){
   const baseOAI={model,messages:[
     {role:'system',content:systemPrompt},
     {role:'user',content:userPrompt}
-  ],max_tokens:400,stream:false};
-  const body=isAnthropic
-    ?JSON.stringify({model,max_tokens:400,system:systemPrompt,
-      messages:[{role:'user',content:userPrompt}]})
-    :JSON.stringify({...baseOAI,response_format:{type:'json_object'}});
-
+  ],max_tokens:800,stream:false};
+  
   const ctrl=new AbortController();
   const tid=setTimeout(()=>ctrl.abort(),timeoutMs);
   let r;
+  
   try{
-    r=await fetch(url,{method:'POST',headers,body,signal:ctrl.signal});
+    r=await fetch(url,{method:'POST',headers,body:JSON.stringify(baseOAI),signal:ctrl.signal});
   }catch(e){
     clearTimeout(tid);
     if(e.name==='AbortError') throw new Error('请求超时');
     throw new Error('网络连接失败');
   }
   clearTimeout(tid);
-  // OpenAI 不支持 response_format 时回退一次
-  if(!r.ok && !isAnthropic){
-    try{
-      const fb=JSON.stringify(baseOAI);
-      r=await fetch(url,{method:'POST',headers,body:fb});
-    }catch(e){throw new Error('网络连接失败');}
-  }
+  
   if(!r.ok){
     const e=await r.json().catch(()=>({}));
     throw new Error(e?.error?.message||`HTTP ${r.status}`);
@@ -1352,16 +1401,21 @@ async function requestBreakdown(taskId, confirmReplace){
   _aiBusyTaskId=taskId;
   delete _toastByTaskId[taskId];
   renderTasks();
+  addLog(`开始拆解任务: ${t.title}`);
   try{
-    const raw=await requestJSON(t.title, BREAKDOWN_SYS, {timeoutMs:20000});
+    const raw=await requestJSON(t.title, BREAKDOWN_SYS, {timeoutMs:120000});
+    addLog(`拆解结果: ${raw.substring(0,100)}${raw.length>100?'...':''}`);
     const steps=parseStepsLoose(raw);
     if(!steps.length){
       _toastByTaskId[taskId]='AI 没返回有效结果';
+      addLog('AI 没返回有效结果');
     } else {
       TaskStore.setSubtasks(taskId, steps);
+      addLog(`拆解成功，得到 ${steps.length} 个步骤`);
     }
   }catch(e){
     _toastByTaskId[taskId]='拆解失败：'+(e.message||'未知错误');
+    addLog('拆解失败: '+e.message);
   }finally{
     _aiBusyTaskId=null;
     renderTasks();
@@ -2099,11 +2153,12 @@ if(IS_ELECTRON && IS_CHAT_MODE){
     closeBtn.onclick = () => window.petBridge.closeSelf();
     hdrBtns.appendChild(closeBtn);
   }
-  // Drag the chat window by its header
+  // Drag the chat window by its header (excluding buttons)
   const dlgHeader = document.getElementById('dlg-header');
   if(dlgHeader && window.petBridge){
     let cDrag=false, cLastX=0, cLastY=0;
     dlgHeader.addEventListener('mousedown', e=>{
+      // Allow buttons to be clicked
       if(e.target.closest('button')) return;
       cDrag=true; cLastX=e.screenX; cLastY=e.screenY;
       dlgHeader.classList.add('dragging');

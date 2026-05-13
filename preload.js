@@ -5,8 +5,11 @@ contextBridge.exposeInMainWorld('petBridge', {
   expand:     ()       => ipcRenderer.send('expand'),
   collapse:   ()       => ipcRenderer.send('collapse'),
   closeApp:   ()       => ipcRenderer.send('close-app'),
-  hideApp:          ()       => ipcRenderer.send('hide-app'),
-  setIgnoreMouse:   (v)      => ipcRenderer.send('set-ignore-mouse', v),
-  openSettings:     ()       => ipcRenderer.send('open-settings'),
-  closeSelf:        ()       => ipcRenderer.send('close-self'),
+  hideApp:    ()       => ipcRenderer.send('hide-app'),
+  setIgnoreMouse: (v)  => ipcRenderer.send('set-ignore-mouse', v),
+  openSettings:   ()   => ipcRenderer.send('open-settings'),
+  closeSelf:      ()   => ipcRenderer.send('close-self'),
+  // Encrypted API key storage (DPAPI / Keychain via Electron safeStorage)
+  getSecret: () => ipcRenderer.invoke('secret:get'),
+  setSecret: (v) => ipcRenderer.invoke('secret:set', v),
 })

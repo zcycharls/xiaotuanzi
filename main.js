@@ -1,11 +1,30 @@
-const { app, BrowserWindow, shell, ipcMain, screen } = require('electron')
+const { app, BrowserWindow, shell, ipcMain, screen, safeStorage } = require('electron')
 const path = require('path')
+const fs = require('fs')
 
 // Disable DPI scaling so window size = actual pixels
 app.commandLine.appendSwitch('high-dpi-support', '1')
 app.commandLine.appendSwitch('force-device-scale-factor', '1')
 
 let win
+const PRELOAD = path.join(__dirname, 'preload.js')
+const APP_HTML = path.join(__dirname, 'app', 'index.html')
+
+function makeWindow(opts) {
+  return new BrowserWindow({
+    frame: false,
+    alwaysOnTop: true,
+    ...opts,
+    webPreferences: {
+      preload: PRELOAD,
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
+      webSecurity: true,
+      ...(opts.webPreferences || {}),
+    },
+  })
+}
 
 function createWindow() {
   const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize
@@ -13,28 +32,21 @@ function createWindow() {
   // Image is 240x286; add 120px right gutter so the tray buttons clearly clear the koala
   const W = 360, H = 320
 
-  win = new BrowserWindow({
+  win = makeWindow({
     width: W,
     height: H,
     x: Math.floor(sw * 0.6),
     y: Math.floor(sh * 0.5),
-    frame: false,
     transparent: true,
-    alwaysOnTop: true,
     skipTaskbar: false,
     focusable: false,
     thickFrame: false,
     resizable: false,
     hasShadow: false,
     backgroundColor: '#00000001',
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
-    },
   })
 
-  win.loadFile(path.join(__dirname, 'app', 'index.html'))
+  win.loadFile(APP_HTML)
   win.webContents.on('did-finish-load', () => {
     win.setBackgroundColor('#00000000')
   })
@@ -65,22 +77,13 @@ function createWindow() {
     cx = Math.max(0, Math.min(cx, sw - chatW))
     const cy = Math.max(0, Math.min(y, sh - chatH))
 
-    chatWin = new BrowserWindow({
+    chatWin = makeWindow({
       width: chatW,
       height: chatH,
       x: cx, y: cy,
-      frame: false,
-      alwaysOnTop: true,
       backgroundColor: '#f5f0ff',
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        preload: path.join(__dirname, 'preload.js'),
-      },
     })
-    chatWin.loadFile(path.join(__dirname, 'app', 'index.html'), {
-      query: { mode: 'chat' }
-    })
+    chatWin.loadFile(APP_HTML, { query: { mode: 'chat' } })
     chatWin.on('closed', () => { chatWin = null })
   })
 
@@ -98,30 +101,21 @@ function createWindow() {
       settingsWin.focus(); return
     }
     const [x, y] = win.getPosition()
-    settingsWin = new BrowserWindow({
+    settingsWin = makeWindow({
       width: 360,
       height: 580,
       x: Math.max(0, x - 368),
       y: y,
-      frame: false,
-      alwaysOnTop: true,
       backgroundColor: '#f5f0ff',
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        preload: path.join(__dirname, 'preload.js'),
-      },
     })
-    settingsWin.loadFile(path.join(__dirname, 'app', 'index.html'), {
-      query: { mode: 'settings' }
-    })
+    settingsWin.loadFile(APP_HTML, { query: { mode: 'settings' } })
     settingsWin.on('closed', () => { settingsWin = null })
   })
 
   ipcMain.on('close-app', () => app.quit())
   ipcMain.on('close-self', (evt) => {
     const w = BrowserWindow.fromWebContents(evt.sender)
-    if(w && !w.isDestroyed()) w.close()
+    if (w && !w.isDestroyed()) w.close()
   })
   ipcMain.on('hide-app', () => win.minimize())
 
@@ -130,6 +124,35 @@ function createWindow() {
     return { action: 'deny' }
   })
 }
+
+// ── Encrypted storage for the API key (DPAPI on Windows / Keychain on macOS) ──
+const SECRET_FILE = () => path.join(app.getPath('userData'), 'apk.bin')
+
+ipcMain.handle('secret:get', () => {
+  try {
+    const f = SECRET_FILE()
+    if (!fs.existsSync(f)) return ''
+    if (!safeStorage.isEncryptionAvailable()) return ''
+    return safeStorage.decryptString(fs.readFileSync(f))
+  } catch {
+    return ''
+  }
+})
+
+ipcMain.handle('secret:set', (_evt, value) => {
+  try {
+    const f = SECRET_FILE()
+    if (!value) {
+      try { fs.unlinkSync(f) } catch {}
+      return true
+    }
+    if (!safeStorage.isEncryptionAvailable()) return false
+    fs.writeFileSync(f, safeStorage.encryptString(String(value)), { mode: 0o600 })
+    return true
+  } catch {
+    return false
+  }
+})
 
 app.whenReady().then(() => {
   createWindow()

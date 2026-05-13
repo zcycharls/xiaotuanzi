@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src https:; object-src 'none'; base-uri 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>小团子 · v10</title>
 <style>
@@ -700,12 +701,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <input type="url" id="f-base" placeholder="https://api.openai.com/v1" autocomplete="off" spellcheck="false">
         <span class="hint">带不带 /v1 都可以，会自动拼接 /chat/completions。</span>
       </div>
-      <div class="frow">
+      <div class="frow" id="fr-proxy">
         <label class="chk-row">
           <input type="checkbox" id="f-proxy">
           <span>通过 CORS 代理转发（corsproxy.io）</span>
         </label>
-        <span class="hint">本地打开（file://）时勾选此项。你的 API Key 会经过第三方代理，仅建议测试用。</span>
+        <span class="hint">⚠️ 仅浏览器版本（file://）需要勾选；勾选后 API Key 会经过第三方代理，谨慎使用。桌面版无需此项。</span>
       </div>
       <div class="frow">
         <span class="hint">🔒 Key 仅存储在本设备浏览器中，不会上传到任何服务器。</span>
@@ -748,7 +749,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div id="dlg-header-btns">
       <button id="pomo-toggle" aria-label="番茄钟">🍅 专注</button>
       <button id="dlg-clear">清空</button>
-      <button id="dlg-minimize" onclick="window.petBridge.minimizeWindow();" aria-label="最小化" title="最小化">−</button>
+      <button id="dlg-minimize" aria-label="最小化" title="最小化">−</button>
     </div>
   </div>
 
@@ -787,7 +788,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <button id="img-preview-remove" aria-label="移除图片">✕</button>
   </div>
   <div id="chat-row">
-    <input type="file" id="file-input" accept="image/*" style="display:none">
+    <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none">
     <button id="attach-btn" aria-label="上传图片" title="上传图片">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
     </button>
@@ -944,7 +945,15 @@ const DEFAULT_MODEL={anthropic:'claude-haiku-4-5-20251001',openai:'gpt-4o'};
 const MODEL_HINT={anthropic:'留空默认 claude-haiku-4-5-20251001',openai:'留空默认 gpt-4o'};
 
 /* ════════ STATE ════════ */
+const IS_ELECTRON = !!window.petBridge;
+const _urlMode = new URLSearchParams(window.location.search).get('mode');
+const IS_PET_WIN  = IS_ELECTRON && !_urlMode;
+const IS_CHAT_WIN = IS_ELECTRON && _urlMode === 'chat';
+const IS_SET_WIN  = IS_ELECTRON && _urlMode === 'settings';
+
 let cfg=load();
+// Desktop never uses the third-party CORS proxy
+if(IS_ELECTRON) cfg.proxy=false;
 let history=[];
 let busy=false;
 
@@ -953,8 +962,42 @@ function load(){
     return{p:s.p||'anthropic',k:s.k||'',m:s.m||'',b:s.b||'',proxy:!!s.proxy,freq:s.freq||'mid'};}
   catch{return{p:'anthropic',k:'',m:'',b:'',proxy:false,freq:'mid'};}
 }
-function save(){localStorage.setItem('apk',JSON.stringify(cfg));}
+function save(){
+  // On desktop the API key lives in OS-encrypted storage (DPAPI / Keychain); never persist it
+  // to localStorage. On the web we still fall back to localStorage.
+  if(IS_ELECTRON){
+    const {k, ...rest}=cfg;
+    localStorage.setItem('apk',JSON.stringify(rest));
+    window.petBridge.setSecret(k||'').catch(()=>{});
+  } else {
+    localStorage.setItem('apk',JSON.stringify(cfg));
+  }
+}
 function hasKey(){return!!cfg.k;}
+
+// Desktop: pull the key from OS-encrypted storage on boot, and migrate any legacy
+// plaintext key out of localStorage.
+if(IS_ELECTRON){
+  (async()=>{
+    try{
+      const stored=await window.petBridge.getSecret();
+      if(stored){
+        cfg.k=stored;
+      } else if(cfg.k){
+        // legacy plaintext → safeStorage, then scrub localStorage
+        try{ await window.petBridge.setSecret(cfg.k); }catch{}
+      }
+      // Always strip the key from the JSON blob now that it lives in safeStorage
+      try{
+        const raw=JSON.parse(localStorage.getItem('apk')||'{}');
+        if('k' in raw){ delete raw.k; localStorage.setItem('apk',JSON.stringify(raw)); }
+      }catch{}
+      // Refresh UI bits that depend on hasKey()
+      try{ if(typeof updateStatus==='function') updateStatus(); }catch{}
+      try{ if(typeof renderTasks==='function') renderTasks(); }catch{}
+    }catch{}
+  })();
+}
 
 /* ════════ SETTINGS UI ════════ */
 const overlay=document.getElementById('s-overlay');
@@ -972,6 +1015,13 @@ let curP=cfg.p;
 function openSettings(){
   fKey.value=cfg.k;fModel.value=cfg.m;fBase.value=cfg.b;
   fProxy.checked=!!cfg.proxy;
+  // Desktop: hide CORS proxy row entirely — Electron doesn't need it and routing keys
+  // through corsproxy.io is a security risk.
+  if(IS_ELECTRON){
+    const fr=document.getElementById('fr-proxy');
+    if(fr) fr.style.display='none';
+    fProxy.checked=false;
+  }
   curP=cfg.p;syncSeg();syncFreq();updateStatus();
   overlay.classList.add('open');panel.classList.add('open');
 }
@@ -1001,7 +1051,21 @@ function updateStatus(){
 segBtns.forEach(b=>b.addEventListener('click',()=>{if(!b.dataset.p)return;curP=b.dataset.p;syncSeg();}));
 document.getElementById('settings-btn').addEventListener('click',openSettings);
 document.getElementById('s-close').addEventListener('click',closeSettings);
-document.getElementById('s-minimize').addEventListener('click',(e)=>{e.stopPropagation();if(window.petBridge)window.petBridge.minimizeWindow();});
+// s-minimize: in settings-only window close the window; otherwise just collapse the panel
+document.getElementById('s-minimize').addEventListener('click',(e)=>{
+  e.stopPropagation();
+  if(IS_SET_WIN) window.petBridge.closeSelf();
+  else closeSettings();
+});
+// dlg-minimize: in chat-only window close the window; otherwise collapse the dialog
+document.getElementById('dlg-minimize').addEventListener('click',()=>{
+  if(IS_CHAT_WIN){
+    window.petBridge.closeSelf();
+  } else {
+    document.getElementById('chat-dialog').classList.remove('visible');
+    document.getElementById('hint').classList.remove('hidden');
+  }
+});
 overlay.addEventListener('click',closeSettings);
 let _logs = [];
 function addLog(msg){
@@ -1037,7 +1101,7 @@ addLog('小团子启动');
 document.getElementById('save-btn').addEventListener('click',()=>{
   addLog('保存配置');
   cfg={p:curP,k:fKey.value.trim(),m:fModel.value.trim(),
-    b:fBase.value.trim().replace(/\/+$/,''),proxy:fProxy.checked,freq:cfg.freq||'mid'};
+    b:fBase.value.trim().replace(/\/+$/,''),proxy:IS_ELECTRON?false:fProxy.checked,freq:cfg.freq||'mid'};
   save();history=[];closeSettings();
   appendMsg('pet',hasKey()?'设置好了 ✦\n快来跟我聊天吧！':'好的，我在这里呢~ 🌸');
   updateStatus();
@@ -1084,24 +1148,30 @@ function appendMsg(role,text,img){
   const row=document.createElement('div');
   row.className=`dlg-row ${role}`;
 
-  const imgHtml = img
-    ? `<img src="${img}" style="display:block;max-width:200px;max-height:200px;border-radius:10px;margin-bottom:6px;border:1.5px solid #e2d8ff">`
-    : '';
-  const bubbleInner = imgHtml + (text ? escHtml(text) : '');
-
+  const timeStr=escHtml(fmtTime(new Date()));
   if(role==='pet'){
     row.innerHTML=`
       <div class="dlg-avatar">🐾</div>
       <div class="dlg-msg-wrap">
-        <div class="dlg-bubble">${bubbleInner}</div>
-        <div class="dlg-time">${fmtTime(new Date())}</div>
+        <div class="dlg-bubble"></div>
+        <div class="dlg-time">${timeStr}</div>
       </div>`;
   } else {
     row.innerHTML=`
       <div class="dlg-msg-wrap">
-        <div class="dlg-bubble">${bubbleInner}</div>
-        <div class="dlg-time">${fmtTime(new Date())}</div>
+        <div class="dlg-bubble"></div>
+        <div class="dlg-time">${timeStr}</div>
       </div>`;
+  }
+  const bubble=row.querySelector('.dlg-bubble');
+  if(img && typeof img==='string' && /^data:image\/(png|jpe?g|webp|gif);/i.test(img)){
+    const im=document.createElement('img');
+    im.src=img; im.alt='';
+    im.style.cssText='display:block;max-width:200px;max-height:200px;border-radius:10px;margin-bottom:6px;border:1.5px solid #e2d8ff';
+    bubble.appendChild(im);
+  }
+  if(text){
+    bubble.insertAdjacentHTML('beforeend', escHtml(text));
   }
   dlgMsgs.appendChild(row);
   scrollToBottom();
@@ -1448,10 +1518,17 @@ if(attachBtn && fileInput){
   fileInput.addEventListener('change', ()=>{
     const f = fileInput.files && fileInput.files[0];
     if(!f) return;
+    const ALLOWED = ['image/png','image/jpeg','image/webp','image/gif'];
+    if(!ALLOWED.includes(f.type)){ alert('只支持 PNG / JPEG / WEBP / GIF 图片'); fileInput.value=''; return; }
     if(f.size > 4*1024*1024){ alert('图片太大啦，请上传 4MB 以内的图片'); fileInput.value=''; return; }
     const reader = new FileReader();
     reader.onload = e => {
-      attachedImage = e.target.result;
+      const url = e.target.result;
+      // Belt-and-suspenders: confirm the data URL prefix matches what we accepted
+      if(typeof url !== 'string' || !/^data:image\/(png|jpe?g|webp|gif);/i.test(url)){
+        alert('图片格式异常'); fileInput.value=''; return;
+      }
+      attachedImage = url;
       imgPreviewThumb.src = attachedImage;
       imgPreviewArea.classList.add('visible');
       attachBtn.classList.add('has-img');
@@ -1980,7 +2057,8 @@ function checkinMsg(){
 }
 
 // 自动提醒 — 只在宠物窗口触发，且只走头顶气泡（不进聊天对话框、不污染 AI 上下文）
-const _isPetWin = !new URLSearchParams(window.location.search).get('mode');
+// Web (non-Electron) 也走宠物视图，所以兼容判断
+const _isPetWin = !IS_ELECTRON || IS_PET_WIN;
 // 占位函数，pet-mode 块加载后会被替换为真实的 showMini 调用
 let _bubblePush = ()=>{};
 
@@ -2109,20 +2187,24 @@ function onEnd(){
     appendMsg('pet',hasKey()?'在这里呢~ 🌸\n有什么想说的吗？':rand(FALLBACK));
   }
 }
-pw.addEventListener('touchstart',onStart,{passive:false});
-pw.addEventListener('touchmove',onMove,{passive:false});
-pw.addEventListener('touchend',onEnd);
-document.addEventListener('mousedown',onStart);
-window.addEventListener('mousemove',onMove);
-window.addEventListener('mouseup',onEnd);
-document.body.addEventListener('touchmove',e=>{
-  if(!e.target.closest('#chat-input,#s-panel,#dlg-msgs'))e.preventDefault();
-},{passive:false});
-window.addEventListener('resize',()=>{
-  px=Math.min(px,window.innerWidth-110);
-  py=Math.min(py,window.innerHeight-BAR_H_PET-130);
-  applyPos();dlgBottom();
-});
+// Pet-window-only drag/resize: in chat/settings windows the pet element isn't visible,
+// so binding global mouse/touch listeners there just wastes CPU on every pointer event.
+if(!IS_ELECTRON || IS_PET_WIN){
+  pw.addEventListener('touchstart',onStart,{passive:false});
+  pw.addEventListener('touchmove',onMove,{passive:false});
+  pw.addEventListener('touchend',onEnd);
+  document.addEventListener('mousedown',onStart);
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('mouseup',onEnd);
+  document.body.addEventListener('touchmove',e=>{
+    if(!e.target.closest('#chat-input,#s-panel,#dlg-msgs'))e.preventDefault();
+  },{passive:false});
+  window.addEventListener('resize',()=>{
+    px=Math.min(px,window.innerWidth-110);
+    py=Math.min(py,window.innerHeight-BAR_H_PET-130);
+    applyPos();dlgBottom();
+  });
+}
 
 /* ════════ ENTRANCE ════════ */
 pw.style.opacity='0';
@@ -2132,13 +2214,9 @@ setTimeout(()=>{pw.style.transition='filter .2s';},700);
 
 
 /* ════════ DESKTOP PET MODE ════════ */
-const IS_ELECTRON = !!window.petBridge;
-const urlParams = new URLSearchParams(window.location.search);
-const IS_CHAT_MODE = urlParams.get('mode') === 'chat';
-const IS_SETTINGS_MODE = urlParams.get('mode') === 'settings';
 let petExpanded = false;
 
-if(IS_ELECTRON && IS_CHAT_MODE){
+if(IS_CHAT_WIN){
   document.body.classList.add('chat-only-mode');
   showDialog();
   // Close button (top-left)
@@ -2176,13 +2254,13 @@ if(IS_ELECTRON && IS_CHAT_MODE){
       dlgHeader.classList.remove('dragging');
     });
   }
-} else if(IS_ELECTRON && IS_SETTINGS_MODE){
+} else if(IS_SET_WIN){
   document.body.classList.add('settings-only-mode');
   // Show settings panel directly
   openSettings();
   // Replace close button with window close
   document.getElementById('s-close').onclick = () => window.petBridge.closeSelf();
-} else if(IS_ELECTRON){
+} else if(IS_PET_WIN){
   document.body.classList.add('pet-mode');
   document.documentElement.style.background = 'transparent';
   document.documentElement.style.setProperty('--bg','transparent');

@@ -6,18 +6,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>小团子 · v10</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg:#f5f0ff;
+  --bg:#f3eefb;
   --pet-body:#c8b5f5;--pet-belly:#e8deff;--pet-ear:#b09ae0;
   --pet-shadow:rgba(180,150,240,.25);
-  --text-dim:#9b8cc0;--text-main:#5a4a7a;
+  --text-dim:#9b8cc0;--text-main:#4a3868;
   --accent:#b39ddb;
   --bar-bg:rgba(255,255,255,.92);--bar-bd:rgba(210,195,255,.65);
   --focus:#7c5cbf;
   --sheet-bg:#fff;--overlay-bg:rgba(90,74,122,.24);
+
+  /* shared design system */
+  --font-display:'Fraunces',Georgia,'Noto Serif SC',serif;
+  --font-body:'Nunito',-apple-system,sans-serif;
+  --orb-grad:linear-gradient(135deg,#c8b5f5 0%,#a78bd9 55%,#7c5cbf 100%);
+  --card-bg:rgba(255,253,255,.78);
+  --card-bd:rgba(220,210,255,.7);
+  --hairline:rgba(180,160,230,.32);
+  --btn-bg:#ece2ff;
+  --btn-bd:#cbb9ee;
+  --btn-fg:#6b52a0;
+  --btn-bg-hov:#dccbff;
+  --btn-bd-hov:#a78bd9;
 
   /* dialog */
   --dlg-bg:rgba(255,255,255,.82);
@@ -33,7 +46,18 @@ html,body{width:100%;height:100%;overflow:hidden;touch-action:none;box-sizing:bo
   background:var(--bg);font-family:'Nunito',sans-serif}
 
 /* ══ SETTINGS ONLY MODE ══ */
-body.settings-only-mode{background:#f5f0ff !important;overflow-y:auto}
+html.settings-only-html{
+  background:transparent !important;
+  background-image:linear-gradient(transparent,transparent) !important;
+}
+body.settings-only-mode{
+  background:#f5f0ff !important;
+  overflow:hidden;
+  border-radius:18px;
+  box-shadow:0 8px 28px rgba(80,60,120,.18);
+  height:100vh;
+  margin:0;
+}
 body.settings-only-mode #pw{display:none !important}
 body.settings-only-mode #sparkles{display:none !important}
 body.settings-only-mode #chat-dialog{display:none !important}
@@ -46,12 +70,26 @@ body.settings-only-mode #s-panel{
   transform:none !important;
   border-radius:0 !important;
   max-height:none !important;
+  height:100% !important;
   box-shadow:none !important;
-  display:block !important}
+  display:block !important;
+  overflow-y:auto !important;
+  background:transparent !important}
 body.settings-only-mode #s-overlay{display:none !important}
 
 /* ══ CHAT ONLY MODE (separate chat window) ══ */
-body.chat-only-mode{background:#f5f0ff !important;overflow:hidden}
+html.chat-only-html{
+  background:transparent !important;
+  background-image:linear-gradient(transparent,transparent) !important;
+}
+body.chat-only-mode{
+  background:#f5f0ff !important;
+  overflow:hidden;
+  border-radius:18px;
+  box-shadow:0 8px 28px rgba(80,60,120,.18);
+  height:100vh;
+  margin:0;
+}
 body.chat-only-mode::before{display:block !important}
 body.chat-only-mode .sp{display:block !important}
 body.chat-only-mode #pw{display:none !important}
@@ -70,7 +108,7 @@ body.chat-only-mode #chat-dialog{
   opacity:1 !important;
   pointer-events:auto !important;
   transform:none !important}
-body.chat-only-mode #chat-bar{display:flex !important}
+body.chat-only-mode #chat-bar{display:flex !important;border-radius:0 0 18px 18px;overflow:hidden}
 body.chat-only-mode #quick-bar{display:flex !important}
 body.chat-only-mode #mini-bubble{display:none !important}
 body.chat-only-mode #settings-btn{display:none !important}
@@ -90,22 +128,21 @@ body.pet-mode #chat-dialog{display:none}
 
 /* mini bubble in pet mode */
 #mini-bubble{
-  position:fixed;left:120px;top:6px;
-  transform:translateX(-50%);
+  position:fixed;right:8px;top:6px;
   background:#fff;border:2px solid #e2d8ff;
-  border-radius:16px 16px 4px 16px;
+  border-radius:16px 16px 16px 4px;
   padding:8px 12px;font-size:12px;font-weight:700;
   color:#6b52a0;white-space:pre-wrap;word-break:break-word;
-  max-width:160px;line-height:1.5;
-  box-shadow:none;
+  width:200px;line-height:1.5;
+  box-shadow:0 4px 14px rgba(120,90,180,.18);
   pointer-events:none;z-index:50;
-  opacity:0;transition:opacity .3s ease;text-align:center}
+  opacity:0;transition:opacity .3s ease;text-align:left}
 #mini-bubble.show{opacity:1}
 #mini-bubble::after{content:'';position:absolute;
-  bottom:-8px;right:16px;
+  bottom:-8px;left:16px;
   width:12px;height:12px;background:#fff;
-  border-right:2px solid #e2d8ff;border-bottom:2px solid #e2d8ff;
-  transform:rotate(45deg);border-radius:0 0 3px 0}
+  border-left:2px solid #e2d8ff;border-bottom:2px solid #e2d8ff;
+  transform:rotate(-45deg);border-radius:0 0 0 3px}
 body:not(.pet-mode) #mini-bubble{display:none}
 body.pet-mode #chat-bar{display:none}
 body.pet-mode #hint{display:none}
@@ -143,9 +180,85 @@ body.pet-mode.expanded #settings-btn{display:flex}
 .tl-row,.tl-btn,.tl-check,.tl-menu-btn,.tl-sub-del{-webkit-app-region:no-drag}
 
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  border-radius:18px;
   background-image:
-    radial-gradient(circle at 20% 18%,rgba(200,181,245,.18) 0%,transparent 50%),
-    radial-gradient(circle at 80% 78%,rgba(179,157,219,.15) 0%,transparent 45%)}
+    radial-gradient(circle at 20% 18%,rgba(200,181,245,.22) 0%,transparent 50%),
+    radial-gradient(circle at 80% 78%,rgba(179,157,219,.18) 0%,transparent 45%)}
+
+/* paper-grain dot field — atmosphere shared by chat + settings */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  border-radius:18px;
+  background-image:radial-gradient(rgba(140,110,200,.075) 1px,transparent 1px);
+  background-size:13px 13px;background-position:0 0;
+  opacity:.85;mix-blend-mode:multiply}
+body.pet-mode::after{display:none}
+body.pet-mode::before{display:none}
+
+/* ═══════ SHARED WINDOW HEADER SYSTEM ═══════ */
+/* one rhythm for every window: gradient orb + Fraunces title + button cluster */
+.win-title{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--font-display);font-weight:600;
+  font-size:18px;letter-spacing:.005em;color:var(--text-main);
+  line-height:1}
+.win-orb{
+  position:relative;
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  background:var(--orb-grad);
+  box-shadow:0 2px 6px rgba(124,92,191,.32),
+             inset 0 1px 2px rgba(255,255,255,.45),
+             inset 0 -2px 4px rgba(80,50,140,.18);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:#fff;font-family:var(--font-body);font-weight:800;
+  letter-spacing:-.02em;
+  text-shadow:0 1px 2px rgba(80,50,140,.35)}
+
+/* "washi tape" mini-label — used over section headings */
+.s-tape{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-body);font-size:10.5px;font-weight:800;
+  color:#6b52a0;letter-spacing:.14em;text-transform:uppercase;
+  padding:3px 10px 3px 9px;border-radius:3px;
+  background:linear-gradient(180deg,#ede2ff 0%,#dccaff 100%);
+  box-shadow:0 1px 0 rgba(255,255,255,.6) inset,
+             0 2px 4px rgba(120,90,180,.12);
+  transform:rotate(-1.2deg);transform-origin:left center}
+.s-tape::before{content:'';width:5px;height:5px;border-radius:50%;
+  background:#7c5cbf;box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+
+/* ═══════ SHARED BUTTONS ═══════ */
+.icon-btn{
+  width:28px;height:28px;border-radius:50%;
+  border:1.5px solid var(--btn-bd);background:var(--btn-bg);
+  color:var(--btn-fg);font-family:var(--font-body);font-size:14px;font-weight:700;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  touch-action:manipulation;-webkit-app-region:no-drag;
+  box-shadow:0 1px 3px rgba(110,80,170,.15),inset 0 1px 0 rgba(255,255,255,.55);
+  transition:background .15s,border-color .15s,transform .12s}
+.icon-btn:hover{background:var(--btn-bg-hov);border-color:var(--btn-bd-hov)}
+.icon-btn:active{transform:scale(.92)}
+.icon-btn.danger:hover{background:#ffdada;border-color:#e08a8a;color:#a14545}
+
+.pill-btn{
+  height:28px;padding:0 12px;border-radius:14px;
+  border:1.5px solid var(--btn-bd);background:var(--btn-bg);
+  color:var(--btn-fg);
+  font-family:var(--font-body);font-size:11.5px;font-weight:800;
+  letter-spacing:.04em;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  touch-action:manipulation;-webkit-app-region:no-drag;
+  box-shadow:0 1px 3px rgba(110,80,170,.15),inset 0 1px 0 rgba(255,255,255,.55);
+  transition:background .15s,border-color .15s,transform .12s}
+.pill-btn:hover{background:var(--btn-bg-hov);border-color:var(--btn-bd-hov)}
+.pill-btn:active{transform:scale(.96)}
+.pill-btn.on{background:linear-gradient(135deg,#f6d8a8,#f0b870);
+  border-color:#d59a45;color:#6b3f0c;
+  box-shadow:0 2px 6px rgba(190,130,40,.28),inset 0 1px 0 rgba(255,255,255,.55)}
+
+/* a hairline separator that ties chat + settings header to their body */
+.win-rule{height:1px;background:linear-gradient(90deg,
+    transparent 0%,var(--hairline) 18%,var(--hairline) 82%,transparent 100%);
+  margin:0 16px;flex-shrink:0}
 
 .sp{position:fixed;width:5px;height:5px;border-radius:50%;background:var(--accent);
   opacity:0;pointer-events:none;z-index:0;
@@ -181,22 +294,24 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #s-panel.open{transform:translateY(0)}
 
-.sh-handle{width:38px;height:4px;background:#ddd5f8;border-radius:2px;margin:14px auto 0}
-#s-header-drag{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 8px;-webkit-app-region:drag;cursor:grab}
+.sh-handle{width:34px;height:3px;background:#cabaee;border-radius:2px;margin:11px auto 0;opacity:.7}
+#s-header-drag{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px 12px;-webkit-app-region:drag;cursor:grab;
+  position:relative;z-index:2}
 #s-header-drag:active{cursor:grabbing}
-.sh-title{font-size:18px;font-weight:800;color:var(--text-main)}
 #s-header-btns{display:flex;align-items:center;gap:6px;-webkit-app-region:no-drag}
-#s-minimize{width:28px;height:28px;border-radius:50%;border:none;background:#f0ebff;
-  font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:var(--text-dim);touch-action:manipulation;-webkit-app-region:no-drag}
-#s-minimize:active{background:#e2d8ff}
-#s-close{width:32px;height:32px;border-radius:50%;border:none;background:#f0ebff;
-  font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:var(--text-dim);touch-action:manipulation;-webkit-app-region:no-drag}
-#s-close:active{background:#e2d8ff}
-.sh-body{padding:4px 22px 28px}
-.seg-lbl{font-size:11px;font-weight:800;color:var(--text-dim);letter-spacing:.07em;
-  text-transform:uppercase;margin:18px 0 8px}
+.sh-body{padding:6px 22px 28px;position:relative;z-index:1}
+.seg-lbl{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--font-body);font-size:10.5px;font-weight:800;
+  color:#6b52a0;letter-spacing:.14em;text-transform:uppercase;
+  padding:3px 10px 3px 9px;border-radius:3px;margin:20px 0 10px;
+  background:linear-gradient(180deg,#ede2ff 0%,#dccaff 100%);
+  box-shadow:0 1px 0 rgba(255,255,255,.6) inset,
+             0 2px 4px rgba(120,90,180,.12);
+  transform:rotate(-1.2deg);transform-origin:left center}
+.seg-lbl::before{content:'';width:5px;height:5px;border-radius:50%;
+  background:#7c5cbf;box-shadow:0 0 0 2px rgba(255,255,255,.55);flex-shrink:0}
 .seg{display:flex;gap:6px;background:#f2eeff;border-radius:14px;padding:4px}
 .seg-b{flex:1;padding:9px 4px;border:none;border-radius:11px;cursor:pointer;
   font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;
@@ -222,12 +337,21 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .frow input:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(124,92,191,.11)}
 .frow input::placeholder{color:#c8bce0;font-weight:600}
 .frow .hint{font-size:11px;color:var(--text-dim);line-height:1.5}
-#save-btn{width:100%;padding:14px;border:none;border-radius:14px;
-  background:linear-gradient(135deg,#b09ae0,#7c5cbf);
-  color:#fff;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;
-  cursor:pointer;margin-top:22px;letter-spacing:.04em;
-  box-shadow:0 5px 18px rgba(124,92,191,.3);
-  transition:transform .14s;touch-action:manipulation}
+#save-btn{
+  position:relative;width:100%;padding:14px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,#c2a8e8 0%,#9a7cd4 50%,#7c5cbf 100%);
+  color:#fff;font-family:var(--font-body);font-size:14px;font-weight:800;
+  cursor:pointer;margin-top:22px;letter-spacing:.12em;text-transform:uppercase;
+  box-shadow:0 6px 20px rgba(124,92,191,.32),
+             inset 0 1px 0 rgba(255,255,255,.35),
+             inset 0 -2px 0 rgba(70,40,120,.22);
+  transition:transform .14s,box-shadow .2s;touch-action:manipulation;overflow:hidden}
+#save-btn::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 0%,rgba(255,255,255,.35),transparent 60%);
+  pointer-events:none}
+#save-btn:hover{box-shadow:0 8px 24px rgba(124,92,191,.42),
+             inset 0 1px 0 rgba(255,255,255,.35),
+             inset 0 -2px 0 rgba(70,40,120,.22)}
 #save-btn:active{transform:scale(.97)}
 
 /* ═══ PET ═══ */
@@ -246,13 +370,20 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 #pet-img{display:block;width:100%;height:100%;object-fit:contain;-webkit-user-select:none;user-select:none;pointer-events:none;position:relative;z-index:1}
 
-/* click jump — squash/stretch only on wrap, no translateY (avoid window-edge clipping) */
-#pw.jumping .pet-img-wrap{animation:pet-jump .55s cubic-bezier(.3,1.4,.5,1)}
+/* click jump — squash/stretch only on wrap.
+   Wrapper sits at left:0 (no left margin) and image is vertically centered with ~17px clearance
+   top/bottom. Anchor at LEFT-CENTER (0, 50%) so:
+     - horizontal scale grows only RIGHT into the gutter (left never clips at x=0)
+     - vertical scale grows symmetrically up & down (stays inside the 17px head/foot clearance) */
+#pw.jumping .pet-img-wrap{
+  animation:pet-jump .55s cubic-bezier(.3,1.4,.5,1);
+  transform-origin:0 50%;
+}
 @keyframes pet-jump{
   0%  {transform:scale(1,1)}
-  15% {transform:scale(1.14,.86)}
-  45% {transform:scale(.92,1.10)}
-  72% {transform:scale(1.08,.93)}
+  15% {transform:scale(1.08,.92)}
+  45% {transform:scale(.96,1.03)}
+  72% {transform:scale(1.04,.97)}
   100%{transform:scale(1,1)}
 }
 
@@ -288,38 +419,27 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   transition:opacity .3s ease, transform .3s cubic-bezier(.34,1.4,.64,1)}
 #chat-dialog.visible{opacity:1;pointer-events:auto;transform:translateY(0)}
 
-/* dialog header — pet name + clear button */
+/* dialog header — shared "Lavender Stationery" header */
 #dlg-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px 8px;flex-shrink:0;
-  border-bottom:1px solid rgba(210,195,255,.4);
-  gap:8px}
+  padding:14px 18px 12px;flex-shrink:0;
+  border-bottom:1px solid var(--hairline);
+  gap:8px;position:relative}
 #dlg-title{
-  display:flex;align-items:center;gap:7px;
-  font-size:13px;font-weight:800;color:var(--text-dim);
-  flex-shrink:0}
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--font-display);font-weight:600;
+  font-size:18px;letter-spacing:.005em;color:var(--text-main);
+  line-height:1;flex-shrink:0}
 #dlg-title .pet-dot{
-  width:22px;height:22px;border-radius:50%;
-  background:linear-gradient(135deg,#c8b5f5,#b09ae0);
-  display:flex;align-items:center;justify-content:center;font-size:12px;
-  flex-shrink:0}
+  width:24px;height:24px;border-radius:50%;
+  background:var(--orb-grad);
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  flex-shrink:0;
+  box-shadow:0 2px 6px rgba(124,92,191,.32),
+             inset 0 1px 2px rgba(255,255,255,.45),
+             inset 0 -2px 4px rgba(80,50,140,.18);
+  font-family:var(--font-body)}
 #dlg-header-btns{display:flex;align-items:center;gap:6px;flex-shrink:0;pointer-events:auto}
-#dlg-clear{
-  padding:4px 11px;border-radius:20px;border:none;
-  background:rgba(240,235,255,.8);
-  font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;
-  color:var(--text-dim);cursor:pointer;touch-action:manipulation;
-  white-space:nowrap;
-  transition:background .18s}
-#dlg-clear:active{background:#e2d8ff}
-#dlg-minimize{
-  padding:4px 11px;border-radius:20px;border:none;
-  background:rgba(240,235,255,.8);
-  font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;
-  color:var(--text-dim);cursor:pointer;touch-action:manipulation;
-  white-space:nowrap;z-index:60;
-  transition:background .18s;width:28px;height:28px;display:flex;align-items:center;justify-content:center;pointer-events:auto}
-#dlg-minimize:active{background:#e2d8ff}
 
 /* message list */
 #dlg-msgs{
@@ -534,14 +654,40 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   border-radius:2px;width:0%;transition:width .9s linear}
 #pomo-widget.break-mode #pomo-fill{background:linear-gradient(90deg,#a8d8b0,#5baa6e)}
 
-/* header actions */
+/* header actions — uses shared .pill-btn / .icon-btn rhythm */
 #dlg-header-btns{display:flex;align-items:center;gap:6px}
-#pomo-toggle{padding:4px 10px;border-radius:20px;border:1.5px solid rgba(210,195,255,.7);
-  background:rgba(240,235,255,.8);font-size:12px;cursor:pointer;
-  font-family:'Nunito',sans-serif;font-weight:700;color:var(--text-dim);
-  touch-action:manipulation;transition:background .15s}
-#pomo-toggle.on{background:#fff0d8;border-color:#f0c070;color:#8a6010}
-#pomo-toggle:active{background:#e2d8ff}
+#pomo-toggle{
+  height:28px;padding:0 12px;border-radius:14px;
+  border:1.5px solid var(--btn-bd);background:var(--btn-bg);
+  color:var(--btn-fg);
+  font-family:var(--font-body);font-size:11.5px;font-weight:800;
+  letter-spacing:.04em;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  touch-action:manipulation;
+  box-shadow:0 1px 3px rgba(110,80,170,.15),inset 0 1px 0 rgba(255,255,255,.55);
+  transition:background .15s,border-color .15s,transform .12s}
+#pomo-toggle:hover{background:var(--btn-bg-hov);border-color:var(--btn-bd-hov)}
+#pomo-toggle.on{background:linear-gradient(135deg,#f6d8a8,#f0b870);
+  border-color:#d59a45;color:#6b3f0c;
+  box-shadow:0 2px 6px rgba(190,130,40,.28),inset 0 1px 0 rgba(255,255,255,.55)}
+#pomo-toggle:active{transform:scale(.96)}
+
+/* clear/minimize/close use shared icon-btn — keep ids in case other CSS targets them */
+#dlg-clear,#dlg-minimize,#dlg-close,#s-minimize,#s-close{
+  width:28px;height:28px;border-radius:50%;
+  border:1.5px solid var(--btn-bd);background:var(--btn-bg);
+  color:var(--btn-fg);
+  font-family:var(--font-body);font-size:14px;font-weight:700;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  touch-action:manipulation;-webkit-app-region:no-drag;
+  box-shadow:0 1px 3px rgba(110,80,170,.15),inset 0 1px 0 rgba(255,255,255,.55);
+  transition:background .15s,border-color .15s,transform .12s;
+  padding:0;line-height:1}
+#dlg-clear{font-size:12px}
+#dlg-clear:hover,#dlg-minimize:hover,#s-minimize:hover{
+  background:var(--btn-bg-hov);border-color:var(--btn-bd-hov)}
+#s-close:hover,#dlg-close:hover{background:#ffdada;border-color:#e08a8a;color:#a14545}
+#dlg-clear:active,#dlg-minimize:active,#dlg-close:active,#s-minimize:active,#s-close:active{transform:scale(.92)}
 
 /* ═══ QUICK PHRASES ═══ */
 #quick-bar{
@@ -591,10 +737,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 #chat-input:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(124,92,191,.1)}
 #chat-input::placeholder{color:#c4b8e0;font-weight:600}
 #send-btn{width:44px;height:44px;min-width:44px;border-radius:50%;border:none;
-  background:linear-gradient(135deg,#b39ddb,#7c5cbf);color:#fff;font-size:17px;
+  background:linear-gradient(135deg,#c2a8e8 0%,#9a7cd4 50%,#7c5cbf 100%);
+  color:#fff;font-size:17px;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 3px 14px rgba(124,92,191,.32);
-  transition:transform .14s,opacity .2s;touch-action:manipulation;flex-shrink:0}
+  box-shadow:0 4px 16px rgba(124,92,191,.34),
+             inset 0 1px 0 rgba(255,255,255,.35),
+             inset 0 -2px 0 rgba(70,40,120,.22);
+  transition:transform .14s,opacity .2s,box-shadow .2s;touch-action:manipulation;flex-shrink:0}
+#send-btn:hover{box-shadow:0 6px 20px rgba(124,92,191,.42),
+             inset 0 1px 0 rgba(255,255,255,.35),
+             inset 0 -2px 0 rgba(70,40,120,.22)}
 #send-btn:active{transform:scale(.89)}
 #send-btn:disabled{opacity:.42;cursor:default}
 
@@ -614,6 +766,130 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.03em;
   opacity:.65;pointer-events:none;z-index:5;transition:opacity .4s}
 #hint.hidden{opacity:0}
+
+/* ═══════ PET DIALOG — 折角便签 modal ═══════ */
+/* shared confirm / alert / prompt that matches the Lavender Stationery system */
+.pet-mdl-back{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(76,54,120,.32);
+  backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;border-radius:18px;
+  opacity:0;transition:opacity .22s ease;
+  pointer-events:none}
+.pet-mdl-back.show{opacity:1;pointer-events:auto}
+
+.pet-mdl{
+  position:relative;
+  width:100%;max-width:300px;
+  background:#fffafd;
+  border:1px solid rgba(220,200,255,.7);
+  border-radius:18px;
+  padding:36px 22px 20px;
+  box-shadow:
+    0 24px 60px rgba(60,30,110,.28),
+    0 4px 14px rgba(80,50,140,.16),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  transform:translateY(14px) scale(.94);
+  opacity:0;
+  transition:transform .32s cubic-bezier(.34,1.4,.64,1),
+             opacity .22s ease}
+.pet-mdl-back.show .pet-mdl{transform:translateY(0) scale(1);opacity:1}
+
+/* the washi-tape ribbon clipped over the top edge of the card */
+.pet-mdl-tape{
+  position:absolute;top:-9px;left:50%;transform:translateX(-50%) rotate(-1.2deg);
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--font-body);font-size:10.5px;font-weight:800;
+  color:#6b52a0;letter-spacing:.18em;text-transform:uppercase;
+  padding:5px 14px 5px 12px;border-radius:3px;
+  background:linear-gradient(180deg,#ede2ff 0%,#dccaff 100%);
+  box-shadow:0 1px 0 rgba(255,255,255,.6) inset,
+             0 2px 6px rgba(120,90,180,.22)}
+.pet-mdl-tape::before{content:'';width:5px;height:5px;border-radius:50%;
+  background:#7c5cbf;box-shadow:0 0 0 2px rgba(255,255,255,.55);flex-shrink:0}
+.pet-mdl.danger .pet-mdl-tape{
+  background:linear-gradient(180deg,#ffe0e0 0%,#ffc4c4 100%);
+  color:#a14545}
+.pet-mdl.danger .pet-mdl-tape::before{background:#d56565}
+
+/* a tiny decorative pin in the top-left, signature element */
+.pet-mdl::before{content:'';position:absolute;top:14px;left:14px;
+  width:6px;height:6px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#c8b5f5,#7c5cbf 70%,#4a2f8a);
+  box-shadow:0 1px 2px rgba(80,50,140,.4)}
+.pet-mdl.danger::before{background:radial-gradient(circle at 35% 35%,#f0a0a0,#d05050 70%,#8a2020)}
+
+.pet-mdl-title{
+  font-family:var(--font-display);font-weight:600;
+  font-size:18px;color:var(--text-main);
+  line-height:1.3;margin-bottom:8px;letter-spacing:.005em;
+  text-align:left;padding-right:6px}
+.pet-mdl-msg{
+  font-family:var(--font-body);font-size:13px;font-weight:600;
+  color:#6b5995;line-height:1.55;
+  margin-bottom:18px;
+  word-break:break-word;
+  -webkit-user-select:text;user-select:text}
+
+.pet-mdl-input{
+  width:100%;padding:11px 14px;
+  border:1.5px solid #e3d9ff;border-radius:12px;
+  font-family:var(--font-body);font-size:14px;font-weight:600;
+  color:var(--text-main);background:#faf8ff;outline:none;
+  margin-bottom:18px;
+  -webkit-user-select:text;user-select:text;touch-action:manipulation;
+  transition:border-color .2s,box-shadow .2s}
+.pet-mdl-input:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(124,92,191,.13)}
+.pet-mdl-input::placeholder{color:#c8bce0;font-weight:600}
+
+.pet-mdl-btns{
+  display:flex;gap:8px;justify-content:flex-end}
+.pet-mdl-btn{
+  flex:1;height:36px;border-radius:11px;
+  font-family:var(--font-body);font-size:12.5px;font-weight:800;
+  letter-spacing:.06em;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:transform .12s,box-shadow .2s,background .15s;
+  touch-action:manipulation;
+  -webkit-app-region:no-drag}
+.pet-mdl-btn:active{transform:scale(.97)}
+
+/* ghost = cancel */
+.pet-mdl-btn.ghost{
+  background:transparent;color:#8b76b5;
+  border:1.5px solid #d8ccf0}
+.pet-mdl-btn.ghost:hover{background:#f4eeff;border-color:#bca8e5;color:#6b52a0}
+
+/* primary = confirm (non-destructive) */
+.pet-mdl-btn.primary{
+  position:relative;border:none;color:#fff;overflow:hidden;
+  background:linear-gradient(135deg,#c2a8e8 0%,#9a7cd4 50%,#7c5cbf 100%);
+  box-shadow:0 4px 14px rgba(124,92,191,.32),
+             inset 0 1px 0 rgba(255,255,255,.35),
+             inset 0 -2px 0 rgba(70,40,120,.22)}
+.pet-mdl-btn.primary::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 0%,rgba(255,255,255,.32),transparent 60%);
+  pointer-events:none}
+.pet-mdl-btn.primary:hover{
+  box-shadow:0 6px 20px rgba(124,92,191,.42),
+             inset 0 1px 0 rgba(255,255,255,.35),
+             inset 0 -2px 0 rgba(70,40,120,.22)}
+
+/* danger = destructive confirm */
+.pet-mdl-btn.danger{
+  position:relative;border:none;color:#fff;overflow:hidden;
+  background:linear-gradient(135deg,#e8a8a8 0%,#d47c7c 50%,#bf5c5c 100%);
+  box-shadow:0 4px 14px rgba(180,60,60,.28),
+             inset 0 1px 0 rgba(255,255,255,.35),
+             inset 0 -2px 0 rgba(120,40,40,.22)}
+.pet-mdl-btn.danger::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 0%,rgba(255,255,255,.32),transparent 60%);
+  pointer-events:none}
+.pet-mdl-btn.danger:hover{
+  box-shadow:0 6px 20px rgba(180,60,60,.4),
+             inset 0 1px 0 rgba(255,255,255,.35),
+             inset 0 -2px 0 rgba(120,40,40,.22)}
 </style>
 </head>
 <body>
@@ -673,10 +949,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <div id="s-panel" role="dialog" aria-modal="true" aria-label="API 设置">
   <div class="sh-handle"></div>
   <div class="sh-header" id="s-header-drag">
-    <span class="sh-title">🔧 API 设置</span>
+    <div class="win-title">
+      <span class="win-orb" aria-hidden="true">⚙</span>
+      <span>API 设置</span>
+    </div>
     <div id="s-header-btns">
       <button id="s-minimize" aria-label="最小化" title="最小化">−</button>
-      <button id="s-close" aria-label="关闭">✕</button>
+      <button id="s-close" aria-label="关闭" title="关闭" class="danger">✕</button>
     </div>
   </div>
   <div class="sh-body">
@@ -748,7 +1027,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     </div>
     <div id="dlg-header-btns">
       <button id="pomo-toggle" aria-label="番茄钟">🍅 专注</button>
-      <button id="dlg-clear">清空</button>
+      <button id="dlg-clear" aria-label="清空对话" title="清空对话"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
       <button id="dlg-minimize" aria-label="最小化" title="最小化">−</button>
     </div>
   </div>
@@ -800,6 +1079,136 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <script>
 (function(){
 'use strict';
+
+/* ──────── pet dialog: themed confirm / alert / prompt ──────── */
+/* Replaces native window.confirm/alert/prompt with a modal that matches
+   the Lavender Stationery system. All three return Promises. */
+const petDialog = (function(){
+  function build(opts){
+    // opts: { kind:'confirm'|'alert'|'prompt', title, message, okText, cancelText,
+    //         danger, placeholder, defaultValue }
+    const back = document.createElement('div');
+    back.className = 'pet-mdl-back';
+    const card = document.createElement('div');
+    card.className = 'pet-mdl' + (opts.danger ? ' danger' : '');
+
+    const tape = document.createElement('span');
+    tape.className = 'pet-mdl-tape';
+    tape.textContent = opts.tape || (opts.danger ? '注意' : (opts.kind==='alert' ? '提示' : '确认'));
+    card.appendChild(tape);
+
+    if(opts.title){
+      const ti = document.createElement('div');
+      ti.className = 'pet-mdl-title';
+      ti.textContent = opts.title;
+      card.appendChild(ti);
+    }
+
+    const msg = document.createElement('div');
+    msg.className = 'pet-mdl-msg';
+    msg.textContent = opts.message || '';
+    card.appendChild(msg);
+
+    let input = null;
+    if(opts.kind === 'prompt'){
+      input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'pet-mdl-input';
+      input.placeholder = opts.placeholder || '';
+      input.value = opts.defaultValue || '';
+      card.appendChild(input);
+    }
+
+    const btns = document.createElement('div');
+    btns.className = 'pet-mdl-btns';
+
+    let cancelBtn = null;
+    if(opts.kind !== 'alert'){
+      cancelBtn = document.createElement('button');
+      cancelBtn.className = 'pet-mdl-btn ghost';
+      cancelBtn.textContent = opts.cancelText || '取消';
+      btns.appendChild(cancelBtn);
+    }
+
+    const okBtn = document.createElement('button');
+    okBtn.className = 'pet-mdl-btn ' + (opts.danger ? 'danger' : 'primary');
+    okBtn.textContent = opts.okText || '确定';
+    btns.appendChild(okBtn);
+
+    card.appendChild(btns);
+    back.appendChild(card);
+    return { back, card, okBtn, cancelBtn, input };
+  }
+
+  function open(opts){
+    return new Promise(resolve => {
+      const { back, card, okBtn, cancelBtn, input } = build(opts);
+      document.body.appendChild(back);
+      // force reflow before adding .show to ensure the transition runs
+      // eslint-disable-next-line no-unused-expressions
+      back.offsetHeight;
+      back.classList.add('show');
+
+      // focus management
+      setTimeout(()=>{
+        if(input) input.focus();
+        else okBtn.focus();
+      }, 60);
+
+      const cleanup = (val) => {
+        back.classList.remove('show');
+        // wait for exit transition then remove
+        setTimeout(()=>{ back.remove(); }, 280);
+        document.removeEventListener('keydown', onKey, true);
+        resolve(val);
+      };
+
+      const onKey = (e) => {
+        if(e.key === 'Escape'){ e.preventDefault(); e.stopPropagation();
+          cleanup(opts.kind === 'alert' ? true : null); }
+        else if(e.key === 'Enter' && (!input || e.target === input)){
+          e.preventDefault(); e.stopPropagation();
+          cleanup(input ? input.value.trim() : true);
+        }
+      };
+      document.addEventListener('keydown', onKey, true);
+
+      okBtn.addEventListener('click', () => {
+        cleanup(input ? input.value.trim() : true);
+      });
+      if(cancelBtn){
+        cancelBtn.addEventListener('click', () => cleanup(null));
+      }
+      // click on backdrop = cancel (except for alert where it's confirm)
+      back.addEventListener('mousedown', (e) => {
+        if(e.target === back){
+          cleanup(opts.kind === 'alert' ? true : null);
+        }
+      });
+    });
+  }
+
+  return {
+    confirm(message, opts){
+      opts = opts || {};
+      return open({ kind:'confirm', message, title: opts.title,
+        okText: opts.okText, cancelText: opts.cancelText,
+        danger: opts.danger, tape: opts.tape });
+    },
+    alert(message, opts){
+      opts = opts || {};
+      return open({ kind:'alert', message, title: opts.title,
+        okText: opts.okText || '知道了', tape: opts.tape });
+    },
+    prompt(message, opts){
+      opts = opts || {};
+      return open({ kind:'prompt', message, title: opts.title,
+        placeholder: opts.placeholder, defaultValue: opts.defaultValue,
+        okText: opts.okText, cancelText: opts.cancelText, tape: opts.tape });
+    }
+  };
+})();
+window.petDialog = petDialog;
 
 /* ── sparkles ── */
 [[10,12],[85,8],[5,55],[92,40],[15,80],[78,85],[50,5],[35,92],[68,15],[22,68]]
@@ -1051,16 +1460,16 @@ function updateStatus(){
 segBtns.forEach(b=>b.addEventListener('click',()=>{if(!b.dataset.p)return;curP=b.dataset.p;syncSeg();}));
 document.getElementById('settings-btn').addEventListener('click',openSettings);
 document.getElementById('s-close').addEventListener('click',closeSettings);
-// s-minimize: in settings-only window close the window; otherwise just collapse the panel
+// s-minimize: in settings-only window minimize the OS window; otherwise just collapse the panel
 document.getElementById('s-minimize').addEventListener('click',(e)=>{
   e.stopPropagation();
-  if(IS_SET_WIN) window.petBridge.closeSelf();
+  if(IS_SET_WIN) window.petBridge.minimizeSelf();
   else closeSettings();
 });
-// dlg-minimize: in chat-only window close the window; otherwise collapse the dialog
+// dlg-minimize: in chat-only window minimize the OS window; otherwise collapse the dialog
 document.getElementById('dlg-minimize').addEventListener('click',()=>{
   if(IS_CHAT_WIN){
-    window.petBridge.closeSelf();
+    window.petBridge.minimizeSelf();
   } else {
     document.getElementById('chat-dialog').classList.remove('visible');
     document.getElementById('hint').classList.remove('hidden');
@@ -1466,7 +1875,10 @@ async function requestBreakdown(taskId, confirmReplace){
   }
   // 已有子步骤 → 弹框确认替换
   if(!confirmReplace && t.subtasks.length>0){
-    if(!confirm(`「${t.title}」已经有 ${t.subtasks.length} 个子步骤，要替换成新的拆解结果吗？`)) return;
+    const ok = await petDialog.confirm(
+      `「${t.title}」已经有 ${t.subtasks.length} 个子步骤，要替换成新的拆解结果吗？`,
+      { title:'重新拆解', okText:'替换', cancelText:'保留原来的' });
+    if(!ok) return;
   }
   _aiBusyTaskId=taskId;
   delete _toastByTaskId[taskId];
@@ -1519,14 +1931,14 @@ if(attachBtn && fileInput){
     const f = fileInput.files && fileInput.files[0];
     if(!f) return;
     const ALLOWED = ['image/png','image/jpeg','image/webp','image/gif'];
-    if(!ALLOWED.includes(f.type)){ alert('只支持 PNG / JPEG / WEBP / GIF 图片'); fileInput.value=''; return; }
-    if(f.size > 4*1024*1024){ alert('图片太大啦，请上传 4MB 以内的图片'); fileInput.value=''; return; }
+    if(!ALLOWED.includes(f.type)){ petDialog.alert('只支持 PNG / JPEG / WEBP / GIF 图片', { title:'图片格式不支持' }); fileInput.value=''; return; }
+    if(f.size > 4*1024*1024){ petDialog.alert('图片太大啦，请上传 4MB 以内的图片', { title:'图片过大' }); fileInput.value=''; return; }
     const reader = new FileReader();
     reader.onload = e => {
       const url = e.target.result;
       // Belt-and-suspenders: confirm the data URL prefix matches what we accepted
       if(typeof url !== 'string' || !/^data:image\/(png|jpe?g|webp|gif);/i.test(url)){
-        alert('图片格式异常'); fileInput.value=''; return;
+        petDialog.alert('图片格式异常', { title:'图片读取失败' }); fileInput.value=''; return;
       }
       attachedImage = url;
       imgPreviewThumb.src = attachedImage;
@@ -1816,8 +2228,9 @@ if(taskRowsEl){
     }
     if(act==='add-sub'){
       e.stopPropagation();
-      const text=prompt('新的子步骤：');
-      if(text) TaskStore.addSub(taskId,text);
+      petDialog.prompt('新的子步骤：',
+        { title:'添加子步骤', placeholder:'比如「打开编辑器」', okText:'添加' })
+        .then(text=>{ if(text) TaskStore.addSub(taskId, text); });
       return;
     }
     if(act==='activate'){
@@ -1876,18 +2289,24 @@ function openTaskMenu(container, btn, taskId){
   const r=btn.getBoundingClientRect();
   _menuPop.style.top=(r.bottom+4)+'px';
   _menuPop.style.left=Math.max(8, r.right-_menuPop.offsetWidth)+'px';
-  _menuPop.addEventListener('click',e=>{
+  _menuPop.addEventListener('click', async e=>{
     e.stopPropagation();
     const m=e.target.dataset.m;
     if(m==='rename'){
       const titleEl=container.querySelector(`.tl-row[data-id="${taskId}"] .tl-title`);
       if(titleEl) makeEditable(titleEl, txt=>TaskStore.renameTask(taskId,txt));
+      closeMenu();
     } else if(m==='toggle-done'){
       TaskStore.setTaskDone(taskId, !t.done);
+      closeMenu();
     } else if(m==='delete'){
-      if(confirm(`删除任务「${t.title}」？`)) TaskStore.removeTask(taskId);
+      closeMenu();
+      const ok = await petDialog.confirm(`确定要删除任务「${t.title}」吗？这个操作无法撤销。`,
+        { title:'删除任务', danger:true, okText:'删除', cancelText:'再想想' });
+      if(ok) TaskStore.removeTask(taskId);
+    } else {
+      closeMenu();
     }
-    closeMenu();
   });
 }
 
@@ -2217,17 +2636,21 @@ setTimeout(()=>{pw.style.transition='filter .2s';},700);
 let petExpanded = false;
 
 if(IS_CHAT_WIN){
+  document.documentElement.classList.add('chat-only-html');
   document.body.classList.add('chat-only-mode');
   showDialog();
   // Close button (top-left)
   // Hide settings btn in chat window to avoid overlap
   document.getElementById('settings-btn').style.display = 'none';
-  // Add close button to dialog header
+  // Add close button to dialog header — uses shared button system (#dlg-close in CSS)
   const hdrBtns = document.getElementById('dlg-header-btns');
   if(hdrBtns){
     const closeBtn = document.createElement('button');
+    closeBtn.id = 'dlg-close';
+    closeBtn.className = 'danger';
+    closeBtn.setAttribute('aria-label', '关闭');
+    closeBtn.title = '关闭';
     closeBtn.innerHTML = '✕';
-    closeBtn.style.cssText = 'padding:4px 11px;border-radius:20px;border:none;background:rgba(240,235,255,.8);font-family:Nunito,sans-serif;font-size:11px;font-weight:700;color:#9b8cc0;cursor:pointer;touch-action:manipulation';
     closeBtn.onclick = () => window.petBridge.closeSelf();
     hdrBtns.appendChild(closeBtn);
   }
@@ -2255,11 +2678,36 @@ if(IS_CHAT_WIN){
     });
   }
 } else if(IS_SET_WIN){
+  document.documentElement.classList.add('settings-only-html');
   document.body.classList.add('settings-only-mode');
   // Show settings panel directly
   openSettings();
   // Replace close button with window close
   document.getElementById('s-close').onclick = () => window.petBridge.closeSelf();
+  // Drag the settings window by its header (same IPC pattern as chat window — -webkit-app-region:drag
+  // is unreliable on transparent + sandboxed BrowserWindows in Electron 28)
+  const sHeader = document.getElementById('s-header-drag');
+  if(sHeader && window.petBridge){
+    let sDrag=false, sLastX=0, sLastY=0;
+    sHeader.style.webkitAppRegion = 'no-drag';   // turn off the broken native drag
+    sHeader.style.cursor = 'grab';
+    sHeader.addEventListener('mousedown', e=>{
+      if(e.target.closest('button')) return;
+      sDrag=true; sLastX=e.screenX; sLastY=e.screenY;
+      sHeader.style.cursor='grabbing';
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', e=>{
+      if(!sDrag) return;
+      const dx=e.screenX-sLastX, dy=e.screenY-sLastY;
+      window.petBridge.moveWindow(dx,dy);
+      sLastX=e.screenX; sLastY=e.screenY;
+    });
+    window.addEventListener('mouseup', ()=>{
+      if(!sDrag) return;
+      sDrag=false; sHeader.style.cursor='grab';
+    });
+  }
 } else if(IS_PET_WIN){
   document.body.classList.add('pet-mode');
   document.documentElement.style.background = 'transparent';
@@ -2269,15 +2717,10 @@ if(IS_CHAT_WIN){
   document.body.style.backgroundColor = 'transparent';
 
   // Tray buttons
+  // Chat button: always opens (or focuses if already open) the chat window. Never toggles icon.
   document.getElementById('tray-expand').addEventListener('click', ()=>{
-    petExpanded = !petExpanded;
-    if(petExpanded){
-      window.petBridge.expand();
-      document.getElementById('tray-expand').textContent = '🐨';
-    } else {
-      window.petBridge.collapse();
-      document.getElementById('tray-expand').textContent = '💬';
-    }
+    window.petBridge.expand();
+    petExpanded = true;
   });
 
   document.getElementById('tray-settings').addEventListener('click', ()=>{
@@ -2307,8 +2750,7 @@ if(IS_CHAT_WIN){
   // 让自动提醒走头顶气泡，超长文本截断
   _bubblePush = (msg)=>{
     if(!msg) return;
-    const t = msg.length>55 ? msg.slice(0,53)+'…' : msg;
-    showMini(t);
+    showMini(String(msg));
     localStorage.setItem('zt_lastActivity', Date.now());
   };
   // 上线问候——让用户立刻确认气泡能弹出

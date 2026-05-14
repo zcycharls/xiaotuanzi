@@ -29,8 +29,9 @@ function makeWindow(opts) {
 function createWindow() {
   const { width: sw, height: sh } = screen.getPrimaryDisplay().workAreaSize
 
-  // Image is 240x286; add 120px right gutter so the tray buttons clearly clear the koala
-  const W = 360, H = 320
+  // Koala wrapper is 240px wide (left-aligned, see app/index.html .pet-img-wrap).
+  // Right gutter holds the bubble (width:200) + tray buttons (right:18, ~22px).
+  const W = 500, H = 320
 
   win = makeWindow({
     width: W,
@@ -81,7 +82,11 @@ function createWindow() {
       width: chatW,
       height: chatH,
       x: cx, y: cy,
-      backgroundColor: '#f5f0ff',
+      transparent: true,
+      backgroundColor: '#00000000',
+      thickFrame: false,
+      hasShadow: false,
+      resizable: false,
     })
     chatWin.loadFile(APP_HTML, { query: { mode: 'chat' } })
     chatWin.on('closed', () => { chatWin = null })
@@ -106,7 +111,11 @@ function createWindow() {
       height: 580,
       x: Math.max(0, x - 368),
       y: y,
-      backgroundColor: '#f5f0ff',
+      transparent: true,
+      backgroundColor: '#00000000',
+      thickFrame: false,
+      hasShadow: false,
+      resizable: false,
     })
     settingsWin.loadFile(APP_HTML, { query: { mode: 'settings' } })
     settingsWin.on('closed', () => { settingsWin = null })
@@ -117,7 +126,23 @@ function createWindow() {
     const w = BrowserWindow.fromWebContents(evt.sender)
     if (w && !w.isDestroyed()) w.close()
   })
-  ipcMain.on('hide-app', () => win.minimize())
+  ipcMain.on('minimize-self', (evt) => {
+    const w = BrowserWindow.fromWebContents(evt.sender)
+    if (w && !w.isDestroyed()) w.minimize()
+  })
+  // Minimize the pet window to the taskbar.
+  // The pet window normally has `focusable: false`, which on Windows implies skipTaskbar:true ―
+  // i.e. once minimized it disappears from the taskbar and can't be restored (looks "closed").
+  // Workaround: flip focusable on for the minimize, then flip it back when restored.
+  ipcMain.on('hide-app', () => {
+    if (!win || win.isDestroyed()) return
+    win.setFocusable(true)
+    win.setSkipTaskbar(false)
+    win.minimize()
+    win.once('restore', () => {
+      win.setFocusable(false)
+    })
+  })
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)

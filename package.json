@@ -1,7 +1,7 @@
 {
-  "name": "xiaotuanzi",
+  "name": "naonao",
   "version": "1.0423.0128",
-  "description": "小团子 ADHD 陪伴宠物",
+  "description": "孬孬 ADHD 陪伴宠物",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,8 +9,8 @@
     "build": "electron-builder --win --x64"
   },
   "build": {
-    "appId": "com.xiaotuanzi.app",
-    "productName": "小团子",
+    "appId": "com.naonao.app",
+    "productName": "孬孬",
     "directories": {
       "output": "dist"
     },
@@ -21,7 +21,7 @@
     ],
     "win": {
       "icon": "build/icon.ico",
-      "artifactName": "小团子-Setup-${version}.${ext}",
+      "artifactName": "孬孬-Setup-${version}.${ext}",
       "target": [
         {
           "target": "nsis",
@@ -38,7 +38,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "小团子",
+      "shortcutName": "孬孬",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
       "installerHeaderIcon": "build/icon.ico",

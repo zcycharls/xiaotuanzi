@@ -7,10 +7,10 @@ function CN([string]$hex) {
 
 $SPARKLE = [char]0x2726  # U+2726 BLACK FOUR POINTED STAR
 
-# Welcome title: "Welcome to Xiaotuanzi's home"
-$WELCOME_TITLE = CN '6B22 8FCE 6765 5230 300C 5C0F 56E2 5B50 300D 7684 5BB6'
-# Welcome line 1: "Xiaotuanzi is a koala that keeps you focused."
-$WELCOME_L1 = CN '5C0F 56E2 5B50 662F 4E00 53EA 966A 4F60 4E13 6CE8 7684 6811 888B 718A 3002'
+# Welcome title: "Welcome to Naonao's home"
+$WELCOME_TITLE = CN '6B22 8FCE 6765 5230 300C 5B6C 5B6C 300D 7684 5BB6'
+# Welcome line 1: "Naonao is a koala that keeps you focused."
+$WELCOME_L1 = CN '5B6C 5B6C 662F 4E00 53EA 966A 4F60 4E13 6CE8 7684 6811 888B 718A 3002'
 # Welcome line 2: "It will quietly stay on your desktop -- not disturbing you, but always there to chat or jot down what you want to do today."
 $WELCOME_L2 = CN '5B83 4F1A 5B89 5B89 9759 9759 5446 5728 4F60 7684 684C 9762 4E0A FF0C 4E0D 6253 6270 FF0C 4F46 968F 65F6 53EF 4EE5 804A 804A 5929 3001 5199 4E00 4E0B 4ECA 5929 60F3 505A 7684 4E8B 3002'
 # Welcome line 3: "Click 'Next' and we can start together."
@@ -19,18 +19,18 @@ $WELCOME_TEXT = $WELCOME_L1 + '$\r$\n' + $WELCOME_L2 + '$\r$\n$\r$\n' + $WELCOME
 
 # Finish title: "Installation Complete (sparkle)"
 $FINISH_TITLE = (CN '5B89 88C5 5B8C 6210') + ' ' + $SPARKLE
-# Finish line 1: "Xiaotuanzi has settled in on your desktop."
-$FINISH_L1 = CN '5C0F 56E2 5B50 5DF2 7ECF 5B89 987F 5728 4F60 7684 684C 9762 4E0A 5566 3002'
-# Finish line 2: "Double-click the desktop icon or open Xiaotuanzi from the Start menu and it will come out."
-$FINISH_L2 = CN '53CC 51FB 684C 9762 6216 5F00 59CB 83DC 5355 91CC 7684 300C 5C0F 56E2 5B50 300D FF0C 5B83 5C31 4F1A 8DD1 51FA 6765 3002'
+# Finish line 1: "Naonao has settled in on your desktop."
+$FINISH_L1 = CN '5B6C 5B6C 5DF2 7ECF 5B89 987F 5728 4F60 7684 684C 9762 4E0A 5566 3002'
+# Finish line 2: "Double-click the desktop icon or open Naonao from the Start menu and it will come out."
+$FINISH_L2 = CN '53CC 51FB 684C 9762 6216 5F00 59CB 83DC 5355 91CC 7684 300C 5B6C 5B6C 300D FF0C 5B83 5C31 4F1A 8DD1 51FA 6765 3002'
 # Finish line 3: "Wishing you a happy, focused day."
 $FINISH_L3 = CN '795D 4F60 4ECA 5929 4E5F 80FD 5F00 5F00 5FC3 5FC3 5730 4E13 6CE8 4E00 4F1A 513F 3002'
 $FINISH_TEXT = $FINISH_L1 + '$\r$\n' + $FINISH_L2 + '$\r$\n$\r$\n' + $FINISH_L3
 
-# Run text: "Wake up Xiaotuanzi now"
-$FINISH_RUN = CN '7ACB 5373 5524 9192 5C0F 56E2 5B50'
+# Run text: "Wake up Naonao now"
+$FINISH_RUN = CN '7ACB 5373 5524 9192 5B6C 5B6C'
 # Header banner -- product name in the .nsh comment
-$BANNER = CN '5C0F 56E2 5B50'
+$BANNER = CN '5B6C 5B6C'
 
 # --- Part A: interpolated portion (defines, copy) ---
 $nshTop = @"

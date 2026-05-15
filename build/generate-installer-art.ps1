@@ -2,7 +2,7 @@ Add-Type -AssemblyName System.Drawing
 $root = 'C:\Users\Administrator\Desktop\xiaotuanzi\.claude\worktrees\competent-volhard-a4dff8\build'
 
 # Chinese strings as unicode escapes (avoids ANSI encoding pitfalls)
-$WORDMARK = -join ([char]0x5C0F, [char]0x56E2, [char]0x5B50)  # 小团子
+$WORDMARK = -join ([char]0x5B6C, [char]0x5B6C)  # 孬孬
 $TAGLINE  = -join ([char]0x966A, [char]0x4F60, [char]0x4E13, [char]0x6CE8, [char]0x7684, [char]0x5C0F, [char]0x53EF, [char]0x7231)  # 陪你专注的小可爱
 
 function MakeKoala($size) {
@@ -84,7 +84,7 @@ $sf.LineAlignment = [System.Drawing.StringAlignment]::Near
 $g.DrawString([string][char]0x2726, $starFont, $starBrush, [single]($w / 2), [single]207, $sf)
 $starFont.Dispose(); $starBrush.Dispose()
 
-# Wordmark — 小团子
+# Wordmark -- naonao
 $titleFont = $null
 try { $titleFont = New-Object System.Drawing.Font -ArgumentList @('Microsoft YaHei', [single]22, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel) } catch { Write-Output ('Bold err: ' + $_.Exception.Message) }
 if ($titleFont -eq $null) { try { $titleFont = New-Object System.Drawing.Font -ArgumentList @('SimHei', [single]22, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel) } catch { Write-Output ('SimHei err: ' + $_.Exception.Message) } }

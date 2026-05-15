@@ -22,9 +22,14 @@
 !define MUI_FINISHPAGE_TEXT    "孬孬已经安顿在你的桌面上啦。$\r$\n双击桌面或开始菜单里的「孬孬」，它就会跑出来。$\r$\n$\r$\n祝你今天也能开开心心地专注一会儿。"
 !define MUI_FINISHPAGE_RUN_TEXT "立即唤醒孬孬"
 
-; ---- Uninstaller mirrors the same theme ----
+; ---- Uninstaller copy (distinct, gentler farewell) ----
 !define MUI_UNWELCOMEPAGE_TITLE_3LINES
+!define MUI_UNWELCOMEPAGE_TITLE  "要送孬孬回家了吗？"
+!define MUI_UNWELCOMEPAGE_TEXT   "卸载后，孬孬就不会再出现在你的桌面上了。$\r$\n它陪你的这段时间——番茄钟、聊天记录、设置——都会被一起带走。$\r$\n$\r$\n如果只是想让它安静一会儿，设置里有「安静模式」，不一定要走。$\r$\n想清楚了就点「下一步」吧。"
+
 !define MUI_UNFINISHPAGE_TITLE_3LINES
+!define MUI_UNFINISHPAGE_TITLE   "孬孬已经走了 ✦"
+!define MUI_UNFINISHPAGE_TEXT    "今天的桌面恢复安静啦。$\r$\n谢谢你陪了它一段时间，希望它也带给过你一点点专注的好时光。$\r$\n$\r$\n想念的话，随时可以再把它接回来。"
 ; ============================================================
 ;  Rounded outer window (chat / settings use 18px CSS radius;
 ;  here we use 22px window-region for a slightly softer feel).

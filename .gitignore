@@ -2,3 +2,10 @@ node_modules/
 dist/
 build/koala-*.png
 build/koala-original.png
+
+# Local worktree config (per-checkout, not shared)
+.claude/
+
+# Throwaway PNG previews of installer BMPs (regenerated on demand)
+build/sidebar-preview.png
+build/header-preview.png

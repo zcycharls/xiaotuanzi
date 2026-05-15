@@ -8,6 +8,10 @@
 !define MUI_TEXTCOLOR            "4A3868"
 !define MUI_LICENSEPAGE_BGCOLOR  "FFFAFD"
 
+; ---- Match the in-app font (chat / settings use Microsoft YaHei UI) ----
+!define MUI_FONT     "Microsoft YaHei UI"
+!define MUI_FONTSIZE "9"
+
 ; ---- Welcome / Finish page copy ----
 !define MUI_WELCOMEPAGE_TITLE_3LINES
 !define MUI_WELCOMEPAGE_TITLE  "欢迎来到「小团子」的家"
@@ -21,3 +25,38 @@
 ; ---- Uninstaller mirrors the same theme ----
 !define MUI_UNWELCOMEPAGE_TITLE_3LINES
 !define MUI_UNFINISHPAGE_TITLE_3LINES
+; ============================================================
+;  Rounded outer window (chat / settings use 18px CSS radius;
+;  here we use 22px window-region for a slightly softer feel).
+;  Implemented via Win32 SetWindowRgn after the dialog is up.
+; ============================================================
+
+!macro XtzRoundCornersBody
+  ; allocate a RECT (4 ints = 16 bytes)
+  System::Call '*(i, i, i, i) p .r0'
+  System::Call 'user32::GetWindowRect(p $HWNDPARENT, p r0)'
+  System::Call '*$0(i .r1, i .r2, i .r3, i .r4)'
+  System::Free $0
+  IntOp $3 $3 - $1   ; width  = right - left
+  IntOp $4 $4 - $2   ; height = bottom - top
+  ; CreateRoundRectRgn(0, 0, w, h, 22, 22)
+  System::Call 'gdi32::CreateRoundRectRgn(i 0, i 0, i r3, i r4, i 22, i 22) p .r5'
+  ; SetWindowRgn(hwnd, hRgn, bRedraw=1) -- system owns hRgn after this call
+  System::Call 'user32::SetWindowRgn(p $HWNDPARENT, p r5, i 1)'
+!macroend
+
+; electron-builder compiles the installer and the uninstaller stub in two
+; separate NSIS passes. BUILD_UNINSTALLER is only defined during the
+; uninstaller pass, so we have to gate un. functions to avoid NSIS warning
+; "Uninstaller script code found but WriteUninstaller never used".
+!ifdef BUILD_UNINSTALLER
+  !define MUI_CUSTOMFUNCTION_UNGUIINIT un.xtzRoundCorners
+  Function un.xtzRoundCorners
+    !insertmacro XtzRoundCornersBody
+  FunctionEnd
+!else
+  !define MUI_CUSTOMFUNCTION_GUIINIT xtzRoundCorners
+  Function xtzRoundCorners
+    !insertmacro XtzRoundCornersBody
+  FunctionEnd
+!endif

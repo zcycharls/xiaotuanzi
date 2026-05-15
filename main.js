@@ -106,11 +106,13 @@ function createWindow() {
       settingsWin.focus(); return
     }
     const [x, y] = win.getPosition()
+    // Match the chat window's dimensions (380x680) so the two side panels feel like a pair.
+    const setW = 380, setH = 680
     settingsWin = makeWindow({
-      width: 360,
-      height: 580,
-      x: Math.max(0, x - 368),
-      y: y,
+      width: setW,
+      height: setH,
+      x: Math.max(0, x - (setW + 8)),
+      y: Math.max(0, Math.min(y, screen.getPrimaryDisplay().workAreaSize.height - setH)),
       transparent: true,
       backgroundColor: '#00000000',
       thickFrame: false,

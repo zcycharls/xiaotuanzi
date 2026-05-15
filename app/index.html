@@ -784,6 +784,49 @@ body.quiet-pet #pw.sleeping .pet-sway-wrap{ transform: rotate(-4deg) !important;
   border-radius:2px;width:0%;transition:width .9s linear}
 #pomo-widget.break-mode #pomo-fill{background:linear-gradient(90deg,#a8d8b0,#5baa6e)}
 
+/* ── Intention capture (shown only on first start when no active task) ── */
+#pomo-intent{
+  display:flex;flex-direction:column;gap:7px;
+  margin-top:8px;padding:10px 11px 11px;
+  background:linear-gradient(140deg,rgba(245,238,255,.95) 0%,rgba(228,217,250,.85) 100%);
+  border:1px solid rgba(180,158,225,.45);
+  border-radius:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 14px -6px rgba(124,92,191,.3);
+  animation:pi-rise .28s cubic-bezier(.3,1.2,.5,1)}
+@keyframes pi-rise{
+  from{opacity:0;transform:translateY(-4px) scale(.98)}
+  to  {opacity:1;transform:translateY(0)    scale(1)}}
+#pomo-intent[hidden]{display:none}
+.pi-eyebrow{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:800;letter-spacing:.06em;
+  color:#6b52a0}
+.pi-leaf{font-size:13px;line-height:1;filter:saturate(.85)}
+#pomo-intent-input{
+  width:100%;padding:9px 11px;
+  font-family:'Nunito','Microsoft YaHei UI',sans-serif;
+  font-size:13px;font-weight:600;color:var(--text-main);
+  background:#fff;border:1.5px solid rgba(195,175,235,.55);
+  border-radius:10px;outline:none;-webkit-appearance:none;
+  transition:border-color .15s,box-shadow .15s}
+#pomo-intent-input::placeholder{color:#bcaee0;font-weight:500;font-style:italic}
+#pomo-intent-input:focus{
+  border-color:#9a7cd4;
+  box-shadow:0 0 0 3px rgba(154,124,212,.18)}
+.pi-actions{display:flex;gap:6px;justify-content:flex-end}
+.pi-btn{
+  padding:6px 12px;border-radius:12px;cursor:pointer;
+  font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;letter-spacing:.02em;
+  border:1.5px solid transparent;transition:transform .12s,background .15s,box-shadow .15s;
+  touch-action:manipulation}
+.pi-btn:active{transform:scale(.95)}
+.pi-skip{background:rgba(255,255,255,.6);color:#7d6aa8;
+  border-color:rgba(195,175,235,.55)}
+.pi-skip:hover{background:#fff}
+.pi-go{background:linear-gradient(135deg,#b39ddb,#7c5cbf);color:#fff;
+  box-shadow:0 2px 8px rgba(124,92,191,.28)}
+.pi-go:hover{box-shadow:0 3px 12px rgba(124,92,191,.36)}
+
 /* header actions — uses shared .pill-btn / .icon-btn rhythm */
 #dlg-header-btns{display:flex;align-items:center;gap:6px}
 #pomo-toggle{
@@ -1194,6 +1237,19 @@ body.quiet-pet #pw.sleeping .pet-sway-wrap{ transform: rotate(-4deg) !important;
       </div>
     </div>
     <div id="pomo-track"><div id="pomo-fill"></div></div>
+    <div id="pomo-intent" hidden>
+      <div class="pi-eyebrow">
+        <span class="pi-leaf">🌿</span>
+        <span>这一段想推进什么？</span>
+      </div>
+      <input id="pomo-intent-input" type="text" maxlength="60"
+             placeholder="一句话就行 · 比如「写完周报第一段」"
+             autocomplete="off" spellcheck="false">
+      <div class="pi-actions">
+        <button class="pi-btn pi-skip" id="pomo-intent-skip" type="button">先不写，开始</button>
+        <button class="pi-btn pi-go" id="pomo-intent-go" type="button">记下来，开始 ✦</button>
+      </div>
+    </div>
   </div>
 
   <div id="dlg-msgs"></div>
@@ -2564,32 +2620,82 @@ function appendPomoNext(head, taskId, subId, subText){
   scrollToBottom();
 }
 
+// ── Intention capture: gentle ADHD scaffolding before pomodoro starts ──
+const pomoIntent      = document.getElementById('pomo-intent');
+const pomoIntentInput = document.getElementById('pomo-intent-input');
+const pomoIntentSkip  = document.getElementById('pomo-intent-skip');
+const pomoIntentGo    = document.getElementById('pomo-intent-go');
+
+function showIntentPrompt(){
+  pomoIntent.hidden = false;
+  pomoIntentInput.value = '';
+  // micro-delay so the rise animation finishes before focus jump
+  setTimeout(()=>pomoIntentInput.focus(), 60);
+}
+function hideIntentPrompt(){ pomoIntent.hidden = true; }
+
+function startPomoNow(){
+  pomoRunning = true;
+  if(window.setKoalaFocusing && pomoMode==='work') window.setKoalaFocusing(true);
+  // 给 active 任务行加 1s 紫色脉冲，让用户确认目标
+  const activeId = TaskStore.state.activeId;
+  if(activeId){
+    const r = document.querySelector(`.tl-row[data-id="${activeId}"]`);
+    if(r){
+      r.classList.remove('pulse'); void r.offsetWidth; r.classList.add('pulse');
+      setTimeout(()=>r.classList.remove('pulse'), 1100);
+    }
+  }
+  pomoTick = setInterval(()=>{
+    pomoLeft--;
+    if(pomoLeft<=0) pomoComplete();
+    else renderPomo();
+  }, 1000);
+  renderPomo();
+}
+
+function commitIntentAndStart(){
+  const txt = pomoIntentInput.value.trim();
+  if(txt){
+    // creates task AND sets it active (TaskStore.addTask side effect)
+    TaskStore.addTask(txt);
+  }
+  hideIntentPrompt();
+  startPomoNow();
+}
+
+pomoIntentGo.addEventListener('click', commitIntentAndStart);
+pomoIntentSkip.addEventListener('click', ()=>{
+  hideIntentPrompt();
+  startPomoNow();
+});
+pomoIntentInput.addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); commitIntentAndStart(); }
+  else if(e.key === 'Escape'){ e.preventDefault(); hideIntentPrompt(); }
+});
+
 pomoStartBtn.addEventListener('click',()=>{
   if(pomoRunning){
-    clearInterval(pomoTick);pomoTick=null;pomoRunning=false;
+    clearInterval(pomoTick); pomoTick=null; pomoRunning=false;
     if(window.setKoalaFocusing) window.setKoalaFocusing(false);
+    hideIntentPrompt(); // hide if user opened it then hit pause somehow
+    renderPomo();
   } else {
-    pomoRunning=true;
-    if(window.setKoalaFocusing && pomoMode==='work') window.setKoalaFocusing(true);
-    // 给 active 任务行加 1s 紫色脉冲，让用户确认目标
-    const activeId=TaskStore.state.activeId;
-    if(activeId){
-      const r=document.querySelector(`.tl-row[data-id="${activeId}"]`);
-      if(r){r.classList.remove('pulse'); void r.offsetWidth; r.classList.add('pulse');
-        setTimeout(()=>r.classList.remove('pulse'),1100);}
+    // First start of a work session with no active task → ask once.
+    // If user already picked an active task, that IS their intention — don't ask twice.
+    // Break sessions never prompt.
+    if(pomoMode === 'work' && !TaskStore.getActive()){
+      showIntentPrompt();
+      return;
     }
-    pomoTick=setInterval(()=>{
-      pomoLeft--;
-      if(pomoLeft<=0) pomoComplete();
-      else renderPomo();
-    },1000);
+    startPomoNow();
   }
-  renderPomo();
 });
 
 pomoResetBtn.addEventListener('click',()=>{
   clearInterval(pomoTick);pomoTick=null;pomoRunning=false;
   if(window.setKoalaFocusing) window.setKoalaFocusing(false);
+  hideIntentPrompt();
   pomoLeft=pomoMode==='work'?POMO_WORK:POMO_BREAK;
   pomoTotal=pomoLeft;renderPomo();
 });

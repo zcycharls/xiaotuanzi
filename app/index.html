@@ -395,37 +395,52 @@ body.pet-mode::before{display:none}
   75%{transform:rotate(4deg)}
 }
 
-/* ═══ PET LIVENESS — make the koala feel alive ═══
-   Three layered transforms so they don't fight each other:
-     .pet-img-wrap  ← jumping squash (existing, transient)
-     .pet-sway-wrap ← long-period sway / sleeping tilt
-     #pet-img       ← continuous breathing / blink-nod
-   Floating overlays (zzz, focus mark) sit absolutely inside .pet-img-wrap. */
+/* ═══ PET LIVENESS — ADHD-aware ═══
+   Design principle: STILLNESS IS THE DEFAULT. Peripheral motion is what
+   distracts ADHD users, so we treat animation as an opt-in response to
+   the user actually looking at the koala, never as ambient noise.
+
+     Default        → koala is completely still
+     .alive         → mouse moved in this window recently → breathing + sway
+     .focusing      → pomodoro running → SUPPRESS motion (very slow breath only)
+     .sleeping      → 5 min idle → static tilt + slow breath + drifting zzz
+     body.quiet-pet → user opted out of all animations entirely
+
+   Three transform layers (wrap → sway-wrap → img) keep jumping/sway/breath
+   from fighting each other on the same property. */
+
 .pet-sway-wrap{
   position:absolute; inset:0;
   display:flex; align-items:center; justify-content:center;
   transform-origin: 50% 100%;
-  animation: petSway 9s ease-in-out infinite;
   pointer-events:none;
+  /* no animation by default — kicks in only via state classes */
+}
+#pet-img{
+  transform-origin: 50% 88%;
+  will-change: transform;
+  transition: filter .6s ease;
+}
+
+/* "Alive" state — mouse moved in this window in the last few seconds */
+#pw.alive:not(.focusing):not(.sleeping) .pet-sway-wrap{
+  animation: petSway 9s ease-in-out infinite;
+}
+#pw.alive:not(.focusing):not(.sleeping) #pet-img{
+  animation: petBreathe 3.6s ease-in-out infinite;
 }
 @keyframes petSway{
   0%, 100% { transform: rotate(0deg); }
-  25%      { transform: rotate(-1.2deg); }
-  75%      { transform: rotate(1.2deg); }
-}
-
-#pet-img{
-  transform-origin: 50% 88%;
-  animation: petBreathe 3.6s ease-in-out infinite;
-  will-change: transform;
+  25%      { transform: rotate(-1.1deg); }
+  75%      { transform: rotate(1.1deg); }
 }
 @keyframes petBreathe{
   0%, 100% { transform: scale(1, 1); }
   50%      { transform: scale(.992, 1.012); }
 }
 
-/* JS toggles .blinking for ~240ms — quick scaleY squint reads as a blink/nod */
-#pw.blinking #pet-img{
+/* Event-driven blink — JS toggles .blinking when user types in chat or clicks */
+#pw.blinking:not(.sleeping) #pet-img{
   animation: petBlinkNod 240ms ease-out;
 }
 @keyframes petBlinkNod{
@@ -434,49 +449,42 @@ body.pet-mode::before{display:none}
   100% { transform: scale(1, 1); }
 }
 
-/* Focus mode — during a running pomodoro */
+/* Focus mode — actively SUPPRESS motion. The koala goes still like a cat
+   in the room: present, but not moving. One barely-perceptible long breath
+   so it still feels alive, no halo, no floating indicator. */
+#pw.focusing .pet-sway-wrap{
+  animation: none;
+  transform: rotate(0deg);
+}
 #pw.focusing #pet-img{
-  animation: petBreatheFocus 5.4s ease-in-out infinite;
-  filter: drop-shadow(0 0 10px rgba(179,157,219,.42));
-  transition: filter .6s ease;
+  animation: petBreatheVeryQuiet 11s ease-in-out infinite;
+  filter: none;
 }
-@keyframes petBreatheFocus{
+@keyframes petBreatheVeryQuiet{
   0%, 100% { transform: scale(1, 1); }
-  50%      { transform: scale(.985, 1.022); }
+  50%      { transform: scale(.997, 1.005); }
 }
+/* Tomato becomes a tiny static badge in the corner — present, not moving */
 .pet-focus-mark{
   position:absolute;
-  top: 18px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 16px;
+  top: 10px; right: 14px; left: auto;
+  font-size: 13px;
   opacity: 0;
   pointer-events:none;
   z-index: 6;
-  filter: drop-shadow(0 2px 4px rgba(124,92,191,.35));
   transition: opacity .35s ease;
 }
-#pw.focusing .pet-focus-mark{
-  opacity: 1;
-  animation: focusPulse 2.6s ease-in-out infinite;
-}
-@keyframes focusPulse{
-  0%, 100% { transform: translateX(-50%) translateY(0)   scale(1);    }
-  50%      { transform: translateX(-50%) translateY(-4px) scale(1.06); }
-}
+#pw.focusing .pet-focus-mark{ opacity: .55; }
 
-/* Sleeping mode — after a few minutes of no interaction */
+/* Sleeping mode — static tilt + slow breath + drifting zzz. Only triggers
+   after 5 min idle, by which time the user isn't trying to focus anyway. */
 #pw.sleeping .pet-sway-wrap{
-  animation: petSleepTilt 7s ease-in-out infinite;
-  transform-origin: 50% 100%;
-}
-@keyframes petSleepTilt{
-  0%, 100% { transform: rotate(-4deg); }
-  50%      { transform: rotate(-6deg); }
+  animation: none;
+  transform: rotate(-4deg);
 }
 #pw.sleeping #pet-img{
-  animation: petBreatheSlow 6.5s ease-in-out infinite;
+  animation: petBreatheSlow 8s ease-in-out infinite;
   filter: brightness(.92) saturate(.85);
-  transition: filter .8s ease;
 }
 @keyframes petBreatheSlow{
   0%, 100% { transform: scale(1, 1); }
@@ -492,16 +500,30 @@ body.pet-mode::before{display:none}
   filter: drop-shadow(0 1px 2px rgba(45,31,71,.25));
 }
 #pw.sleeping .pet-zzz{
-  animation: zzzFloat 3.4s ease-in-out infinite;
+  animation: zzzFloat 4.5s ease-in-out infinite;
 }
 @keyframes zzzFloat{
   0%   { opacity: 0;   transform: translate(0,0)        scale(.7)  rotate(-8deg); }
-  18%  { opacity: .95;                                                            }
+  22%  { opacity: .9;                                                             }
   100% { opacity: 0;   transform: translate(8px,-28px)  scale(1.15) rotate(8deg); }
 }
 
-/* When jumping (click react), kill the slow sway briefly so the squash reads cleanly */
+/* Click reaction — kill sway briefly so the squash reads cleanly */
 #pw.jumping .pet-sway-wrap{ animation: none; transform: rotate(0); }
+
+/* QUIET MODE — user opt-out kill switch. Cuts every animation, leaving only
+   the static sleep-tilt and click reaction (intentional discrete feedback). */
+body.quiet-pet #pw .pet-sway-wrap,
+body.quiet-pet #pw #pet-img,
+body.quiet-pet #pw .pet-zzz,
+body.quiet-pet #pw .pet-focus-mark{
+  animation: none !important;
+}
+body.quiet-pet #pw:not(.sleeping) .pet-sway-wrap{ transform: rotate(0deg) !important; }
+body.quiet-pet #pw #pet-img{ transform: scale(1,1) !important; filter: none !important; }
+body.quiet-pet #pw .pet-zzz{ opacity: 0 !important; }
+body.quiet-pet #pw.focusing .pet-focus-mark{ opacity: .55 !important; }
+body.quiet-pet #pw.sleeping .pet-sway-wrap{ transform: rotate(-4deg) !important; }
 
 /* ═══ HEARTS ═══ */
 .heart{position:fixed;font-size:22px;pointer-events:none;z-index:30;
@@ -1108,6 +1130,13 @@ body.pet-mode::before{display:none}
     </div>
     <span class="hint" style="margin-top:6px;display:block">专注时建议选"低"或"关闭"</span>
 
+    <div class="seg-lbl" style="margin-top:22px">宠物动画</div>
+    <div class="seg" role="group" id="pet-mode-seg">
+      <button class="seg-b on" data-pet="lively">活泼</button>
+      <button class="seg-b" data-pet="quiet">安静（专注友好）</button>
+    </div>
+    <span class="hint" style="margin-top:6px;display:block">安静模式关掉所有空闲动画，只保留点击反馈；适合容易被余光晃动分心的人。</span>
+
     <button id="save-btn">保存并连接 ✦</button>
 
     <div class="seg-lbl" style="margin-top:22px">📝 日志</div>
@@ -1543,7 +1572,7 @@ function openSettings(){
     if(fr) fr.style.display='none';
     fProxy.checked=false;
   }
-  curP=cfg.p;syncSeg();syncFreq();updateStatus();
+  curP=cfg.p;syncSeg();syncFreq();syncPetMode();updateStatus();
   overlay.classList.add('open');panel.classList.add('open');
 }
 function closeSettings(){overlay.classList.remove('open');panel.classList.remove('open');}
@@ -1559,6 +1588,22 @@ document.querySelectorAll('#freq-seg .seg-b').forEach(b=>{
     b.classList.add('on');
   });
 });
+function syncPetMode(){
+  const q = (typeof window.isQuietPet === 'function') ? window.isQuietPet() : false;
+  document.querySelectorAll('#pet-mode-seg .seg-b').forEach(b=>{
+    const isThis = (q && b.dataset.pet==='quiet') || (!q && b.dataset.pet==='lively');
+    b.classList.toggle('on', isThis);
+  });
+}
+document.querySelectorAll('#pet-mode-seg .seg-b').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const quiet = b.dataset.pet === 'quiet';
+    if (typeof window.setQuietPet === 'function') window.setQuietPet(quiet);
+    document.querySelectorAll('#pet-mode-seg .seg-b').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+  });
+});
+syncPetMode();
 function syncSeg(){
   segBtns.forEach(b=>b.classList.toggle('on',b.dataset.p===curP));
   frBase.style.display=curP==='openai'?'flex':'none';
@@ -2650,51 +2695,96 @@ function petReact(){
   wakeKoala();
 }
 
-/* ════════ PET LIVENESS ════════
-   Three behaviors layered on top of the always-on CSS breathing/sway:
-     1. Random blink every 4-7s (skip while jumping/sleeping)
-     2. Sleeping mode after 5 min idle (skipped while focusing)
-     3. Focusing class toggled by the pomodoro lifecycle
+/* ════════ PET LIVENESS — ADHD-aware ════════
+   Design rules:
+     1. Stillness is default. No ambient animation.
+     2. Koala "comes alive" only when the user's cursor is in this window
+        in the last few seconds (= they are looking at it).
+     3. Focusing during a pomodoro → koala goes still (one barely visible
+        long breath). The 🍅 becomes a tiny static badge.
+     4. Blinks are event-driven (typing, clicking), never random.
+     5. Sleeping after 5 min idle is a static state, not motion.
+     6. A "quiet mode" body class disables everything for users who
+        want zero animation. Persisted in localStorage.
 */
 (function petLiveness(){
   const SLEEP_AFTER = 5 * 60 * 1000;
+  const ALIVE_FADE_MS = 3500;
   let sleepTimer = null;
+  let aliveTimer = null;
+  let typeBlinkLock = false;
 
-  function scheduleBlink(){
-    const wait = 4000 + Math.random() * 3500;
-    setTimeout(()=>{
-      if(!pw.classList.contains('jumping') && !pw.classList.contains('sleeping')){
-        pw.classList.remove('blinking');
-        void pw.offsetWidth;
-        pw.classList.add('blinking');
-        setTimeout(()=>pw.classList.remove('blinking'), 260);
-      }
-      scheduleBlink();
-    }, wait);
+  // restore quiet mode preference before any motion has a chance to start
+  try {
+    if (localStorage.getItem('petQuiet') === '1') {
+      document.body.classList.add('quiet-pet');
+    }
+  } catch(e) {}
+
+  function setAlive(){
+    if(pw.classList.contains('focusing')) return;  // don't wake the koala mid-pomodoro
+    if(!pw.classList.contains('alive')) pw.classList.add('alive');
+    if(aliveTimer) clearTimeout(aliveTimer);
+    aliveTimer = setTimeout(()=>{
+      pw.classList.remove('alive');
+    }, ALIVE_FADE_MS);
   }
-  scheduleBlink();
 
-  window.wakeKoala = function(){
+  function blinkOnce(){
+    if(pw.classList.contains('jumping') || pw.classList.contains('sleeping')) return;
+    if(document.body.classList.contains('quiet-pet')) return;
+    pw.classList.remove('blinking');
+    void pw.offsetWidth;
+    pw.classList.add('blinking');
+    setTimeout(()=>pw.classList.remove('blinking'), 260);
+  }
+  window.petBlink = blinkOnce;
+
+  // single combined activity handler: wakes from sleep + marks alive
+  function onUserActivity(){
     if(pw.classList.contains('sleeping')) pw.classList.remove('sleeping');
     if(sleepTimer) clearTimeout(sleepTimer);
     sleepTimer = setTimeout(()=>{
-      // never doze off while a pomodoro is running
       if(!pw.classList.contains('focusing')) pw.classList.add('sleeping');
     }, SLEEP_AFTER);
-  };
+    setAlive();
+  }
   ['mousemove','keydown','mousedown','touchstart','wheel'].forEach(e=>{
-    window.addEventListener(e, window.wakeKoala, {passive:true});
+    window.addEventListener(e, onUserActivity, {passive:true});
   });
-  window.wakeKoala();
+  window.wakeKoala = onUserActivity;
+  onUserActivity();
+
+  // typing in chat → blink gently, max once every 1.2s
+  // (predictable, synchronous with user's own keystrokes = not distracting)
+  const ci = document.getElementById('chat-input');
+  if (ci) {
+    ci.addEventListener('input', ()=>{
+      if(typeBlinkLock) return;
+      typeBlinkLock = true;
+      blinkOnce();
+      setTimeout(()=>{ typeBlinkLock = false; }, 1200);
+    });
+  }
 
   window.setKoalaFocusing = function(on){
     pw.classList.toggle('focusing', !!on);
     if(on){
-      pw.classList.remove('sleeping');
+      // entering focus: stop being "alive", stop the idle countdown
+      pw.classList.remove('sleeping','alive');
       if(sleepTimer){ clearTimeout(sleepTimer); sleepTimer = null; }
+      if(aliveTimer){ clearTimeout(aliveTimer); aliveTimer = null; }
     } else {
-      window.wakeKoala();
+      onUserActivity();
     }
+  };
+
+  window.setQuietPet = function(quiet){
+    document.body.classList.toggle('quiet-pet', !!quiet);
+    try { localStorage.setItem('petQuiet', quiet ? '1' : '0'); } catch(e){}
+  };
+  window.isQuietPet = function(){
+    return document.body.classList.contains('quiet-pet');
   };
 })();
 

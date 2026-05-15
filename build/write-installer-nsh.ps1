@@ -162,7 +162,7 @@ $nshBottom = @'
 
 $nsh = $nshTop + $nshBottom + "`r`n"
 
-$outPath = 'C:\Users\Administrator\Desktop\xiaotuanzi\.claude\worktrees\competent-volhard-a4dff8\build\installer.nsh'
+$outPath = Join-Path $PSScriptRoot 'installer.nsh'
 $utf8Bom = New-Object System.Text.UTF8Encoding($true)
 [System.IO.File]::WriteAllText($outPath, $nsh, $utf8Bom)
 

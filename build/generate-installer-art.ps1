@@ -1,5 +1,5 @@
 Add-Type -AssemblyName System.Drawing
-$root = 'C:\Users\Administrator\Desktop\xiaotuanzi\.claude\worktrees\competent-volhard-a4dff8\build'
+$root = $PSScriptRoot
 
 # Chinese strings as unicode escapes (avoids ANSI encoding pitfalls)
 $WORDMARK = -join ([char]0x5B6C, [char]0x5B6C)  # 孬孬

@@ -75,23 +75,30 @@ $nshTop = @"
 !define MUI_FONTSIZE "9"
 
 ; ---- Welcome / Finish page copy ----
+; NOTE: NSIS MUI2 only has ONE set of MUI_*PAGE_TITLE/TEXT defines that
+; are shared between installer and uninstaller pages. The MUI_UN*PAGE_*
+; names do NOT exist. electron-builder builds the installer and
+; uninstaller in two separate compilation passes, predefining
+; BUILD_UNINSTALLER on the uninstaller pass -- so we branch on it here
+; to swap copy.
+
 !define MUI_WELCOMEPAGE_TITLE_3LINES
-!define MUI_WELCOMEPAGE_TITLE  "$WELCOME_TITLE"
-!define MUI_WELCOMEPAGE_TEXT   "$WELCOME_TEXT"
-
 !define MUI_FINISHPAGE_TITLE_3LINES
-!define MUI_FINISHPAGE_TITLE   "$FINISH_TITLE"
-!define MUI_FINISHPAGE_TEXT    "$FINISH_TEXT"
-!define MUI_FINISHPAGE_RUN_TEXT "$FINISH_RUN"
 
-; ---- Uninstaller copy (distinct, gentler farewell) ----
-!define MUI_UNWELCOMEPAGE_TITLE_3LINES
-!define MUI_UNWELCOMEPAGE_TITLE  "$UN_WELCOME_TITLE"
-!define MUI_UNWELCOMEPAGE_TEXT   "$UN_WELCOME_TEXT"
-
-!define MUI_UNFINISHPAGE_TITLE_3LINES
-!define MUI_UNFINISHPAGE_TITLE   "$UN_FINISH_TITLE"
-!define MUI_UNFINISHPAGE_TEXT    "$UN_FINISH_TEXT"
+!ifdef BUILD_UNINSTALLER
+  ; Uninstaller -- gentler farewell
+  !define MUI_WELCOMEPAGE_TITLE  "$UN_WELCOME_TITLE"
+  !define MUI_WELCOMEPAGE_TEXT   "$UN_WELCOME_TEXT"
+  !define MUI_FINISHPAGE_TITLE   "$UN_FINISH_TITLE"
+  !define MUI_FINISHPAGE_TEXT    "$UN_FINISH_TEXT"
+!else
+  ; Installer -- friendly welcome
+  !define MUI_WELCOMEPAGE_TITLE  "$WELCOME_TITLE"
+  !define MUI_WELCOMEPAGE_TEXT   "$WELCOME_TEXT"
+  !define MUI_FINISHPAGE_TITLE   "$FINISH_TITLE"
+  !define MUI_FINISHPAGE_TEXT    "$FINISH_TEXT"
+  !define MUI_FINISHPAGE_RUN_TEXT "$FINISH_RUN"
+!endif
 
 "@
 

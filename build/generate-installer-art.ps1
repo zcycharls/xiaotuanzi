@@ -81,7 +81,7 @@ $starFont = New-Object System.Drawing.Font -ArgumentList @('Segoe UI Symbol', [s
 $sf = New-Object System.Drawing.StringFormat
 $sf.Alignment = [System.Drawing.StringAlignment]::Center
 $sf.LineAlignment = [System.Drawing.StringAlignment]::Near
-$g.DrawString([string][char]0x2726, $starFont, $starBrush, [single]($w / 2), [single]196, $sf)
+$g.DrawString([string][char]0x2726, $starFont, $starBrush, [single]($w / 2), [single]190, $sf)
 $starFont.Dispose(); $starBrush.Dispose()
 
 # Wordmark -- naonao  (more breathing room from sparkle and tagline)
@@ -92,21 +92,21 @@ if ($titleFont -eq $null) { $titleFont = New-Object System.Drawing.Font -Argumen
 Write-Output ('titleFont ok: ' + ($titleFont -ne $null) + ' name=' + $titleFont.Name + ' bold=' + $titleFont.Bold)
 $shadowBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(80, 30, 10, 60))
 $titleBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 255, 255, 255))
-$g.DrawString($WORDMARK, $titleFont, $shadowBrush, [single]($w / 2 + 1), [single]212, $sf)
-$g.DrawString($WORDMARK, $titleFont, $titleBrush, [single]($w / 2), [single]211, $sf)
+$g.DrawString($WORDMARK, $titleFont, $shadowBrush, [single]($w / 2 + 1), [single]205, $sf)
+$g.DrawString($WORDMARK, $titleFont, $titleBrush, [single]($w / 2), [single]204, $sf)
 $titleFont.Dispose(); $shadowBrush.Dispose(); $titleBrush.Dispose()
 
 # Tagline -- pushed down so it doesn't crowd the wordmark
 $tagFont = New-Object System.Drawing.Font -ArgumentList @('Microsoft YaHei UI', [single]10, [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Pixel)
 $tagBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(220, 255, 255, 255))
-$g.DrawString($TAGLINE, $tagFont, $tagBrush, [single]($w / 2), [single]252, $sf)
+$g.DrawString($TAGLINE, $tagFont, $tagBrush, [single]($w / 2), [single]260, $sf)
 $tagFont.Dispose(); $tagBrush.Dispose()
 
 # Bottom signature line -- author credit
 $versionFont = New-Object System.Drawing.Font -ArgumentList @('Consolas', [single]8, [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Pixel)
 $versionBrush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(160, 255, 255, 255))
 $signature = ([char]0x00B7) + ' CharlsZhou ' + ([char]0x00B7)
-$g.DrawString($signature, $versionFont, $versionBrush, [single]($w / 2), [single]292, $sf)
+$g.DrawString($signature, $versionFont, $versionBrush, [single]($w / 2), [single]296, $sf)
 $versionFont.Dispose(); $versionBrush.Dispose()
 
 $g.Dispose()

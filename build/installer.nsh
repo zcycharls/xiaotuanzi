@@ -26,16 +26,18 @@
 !ifdef BUILD_UNINSTALLER
   ; Uninstaller -- gentler farewell
   !define MUI_WELCOMEPAGE_TITLE  "要送孬孬回家了吗？"
-  !define MUI_WELCOMEPAGE_TEXT   "卸载后，孬孬就不会再出现在你的桌面上了。$\r$\n它陪你的这段时间——番茄钟、聊天记录、设置——都会被一起带走。$\r$\n$\r$\n如果只是想让它安静一会儿，设置里有「安静模式」，不一定要走。$\r$\n想清楚了就点「下一步」吧。"
+  !define MUI_WELCOMEPAGE_TEXT   "卸载后，孬孬就不会再出现在你的桌面上了。$\r$\n$\r$\n它陪你的这段时间——番茄钟、聊天记录、设置——都会被一起带走。$\r$\n$\r$\n$\r$\n如果只是想让它安静一会儿，设置里有「安静模式」，不一定要走。$\r$\n$\r$\n想清楚了就点「下一步」吧。"
   !define MUI_FINISHPAGE_TITLE   "孬孬已经走了 ✦"
-  !define MUI_FINISHPAGE_TEXT    "今天的桌面恢复安静啦。$\r$\n谢谢你陪了它一段时间，希望它也带给过你一点点专注的好时光。$\r$\n$\r$\n想念的话，随时可以再把它接回来。"
+  !define MUI_FINISHPAGE_TEXT    "今天的桌面恢复安静啦。$\r$\n$\r$\n谢谢你陪了它一段时间，希望它也带给过你一点点专注的好时光。$\r$\n$\r$\n$\r$\n想念的话，随时可以再把它接回来。"
 !else
   ; Installer -- friendly welcome
   !define MUI_WELCOMEPAGE_TITLE  "欢迎来到「孬孬」的家"
-  !define MUI_WELCOMEPAGE_TEXT   "孬孬是一只陪你专注的树袋熊。$\r$\n它会安安静静呆在你的桌面上，不打扰，但随时可以聊聊天、写一下今天想做的事。$\r$\n$\r$\n点「下一步」，我们就能一起开始了。"
+  !define MUI_WELCOMEPAGE_TEXT   "孬孬是一只陪你专注的树袋熊。$\r$\n$\r$\n它会安安静静呆在你的桌面上，不打扰，但随时可以聊聊天、写一下今天想做的事。$\r$\n$\r$\n$\r$\n点「下一步」，我们就能一起开始了。"
   !define MUI_FINISHPAGE_TITLE   "安装完成 ✦"
-  !define MUI_FINISHPAGE_TEXT    "孬孬已经安顿在你的桌面上啦。$\r$\n双击桌面或开始菜单里的「孬孬」，它就会跑出来。$\r$\n$\r$\n祝你今天也能开开心心地专注一会儿。"
+  !define MUI_FINISHPAGE_TEXT    "孬孬已经安顿在你的桌面上啦。$\r$\n$\r$\n双击桌面或开始菜单里的「孬孬」，它就会跑出来。$\r$\n$\r$\n$\r$\n祝你今天也能开开心心地专注一会儿。"
   !define MUI_FINISHPAGE_RUN_TEXT "立即唤醒孬孬"
+  ; Directory page -- shorter, breathable copy instead of NSIS default
+  !define MUI_DIRECTORYPAGE_TEXT_TOP "将把孬孬安装到下面的文件夹里。$\r$\n$\r$\n想换到别处？点「浏览」选别的文件夹。$\r$\n$\r$\n准备好就点「安装」开始。"
 !endif
 ; ============================================================
 ;  Rounded outer window (chat / settings use 18px CSS radius;

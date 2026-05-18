@@ -17,4 +17,6 @@ contextBridge.exposeInMainWorld('petBridge', {
   localModelStatus: () => ipcRenderer.invoke('local-model:status'),
   localModelLoad:   () => ipcRenderer.invoke('local-model:load'),
   localModelInference: (text) => ipcRenderer.invoke('local-model:inference', text),
+  // 主进程日志转发到前端
+  onMainLog: (callback) => ipcRenderer.on('main-log', (_evt, msg) => callback(msg)),
 })

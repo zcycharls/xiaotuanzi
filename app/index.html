@@ -1991,6 +1991,11 @@ document.getElementById('log-clear').addEventListener('click',()=>{
 
 addLog('孬孬启动');
 
+// 接收主进程诊断日志
+if (window.petBridge && window.petBridge.onMainLog) {
+  window.petBridge.onMainLog((msg) => addLog('[主进程] ' + msg));
+}
+
 document.getElementById('save-btn').addEventListener('click',()=>{
   addLog('保存配置');
   cfg={p:curP,k:fKey.value.trim(),m:fModel.value.trim(),

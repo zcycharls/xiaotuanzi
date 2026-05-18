@@ -2,10 +2,18 @@ const { app, BrowserWindow, shell, ipcMain, screen, safeStorage } = require('ele
 const path = require('path')
 const fs = require('fs')
 
+// ═══ 日志转发到前端 ═══
+function sendLogToRenderer(msg) {
+  BrowserWindow.getAllWindows().forEach(w => {
+    if (!w.isDestroyed()) w.webContents.send('main-log', msg)
+  })
+}
+
 // ═══ 本地 AI 模型（内置到安装包，完全离线）═══
 let localModelPipeline = null
 let localModelLoading = false
 let localModelReady = false
+const MODEL_NAME = 'Xenova/Qwen1.5-0.5B-Chat'
 
 // 兼容开发环境和生产环境的模型目录
 function getModelDir() {
@@ -18,6 +26,15 @@ function getModelDir() {
   return null
 }
 
+function getModelsRootDir() {
+  // 返回模型所在的父目录（供 transformers.js env.localModelPath 使用）
+  const prodDir = path.join(process.resourcesPath, 'models')
+  if (fs.existsSync(path.join(prodDir, 'Xenova', 'Qwen1.5-0.5B-Chat', 'config.json'))) return prodDir
+  const devDir = path.join(__dirname, 'app', 'models')
+  if (fs.existsSync(path.join(devDir, 'Xenova', 'Qwen1.5-0.5B-Chat', 'config.json'))) return devDir
+  return null
+}
+
 function hasBuiltInModel() {
   const dir = getModelDir()
   return dir !== null && fs.existsSync(path.join(dir, 'onnx', 'decoder_model_merged_quantized.onnx'))
@@ -26,18 +43,42 @@ function hasBuiltInModel() {
 async function loadLocalModel() {
   if (localModelLoading || localModelReady) return localModelReady
   const modelDir = getModelDir()
-  if (!modelDir) return false
+  const modelsRoot = getModelsRootDir()
+
+  // ═══ 诊断日志 ═══
+  const log = (m) => { console.log(m); sendLogToRenderer(m) }
+  log('[诊断] process.resourcesPath: ' + process.resourcesPath)
+  log('[诊断] __dirname: ' + __dirname)
+  log('[诊断] modelDir: ' + modelDir)
+  log('[诊断] modelsRoot: ' + modelsRoot)
+  if (modelDir) {
+    log('[诊断] config.json exists: ' + fs.existsSync(path.join(modelDir, 'config.json')))
+    log('[诊断] onnx exists: ' + fs.existsSync(path.join(modelDir, 'onnx', 'decoder_model_merged_quantized.onnx')))
+  }
+
+  if (!modelDir || !modelsRoot) {
+    log('[诊断] ❌ 模型目录未找到')
+    return false
+  }
   localModelLoading = true
   try {
-    const { pipeline } = require('@xenova/transformers')
-    localModelPipeline = await pipeline('text-generation', modelDir, {
+    // @xenova/transformers v2+ 是 ESM，需要用动态 import() 加载
+    const transformers = await import('@xenova/transformers')
+    const { pipeline, env } = transformers
+    // 设置本地模型根目录，让 transformers.js 能正确找到本地模型
+    env.localModelPath = modelsRoot
+    env.allowRemoteModels = false
+    log('[诊断] env.localModelPath = ' + env.localModelPath)
+    log('[诊断] 开始加载模型: ' + MODEL_NAME)
+    localModelPipeline = await pipeline('text-generation', MODEL_NAME, {
       local_files_only: true,
     })
     localModelReady = true
-    console.log('[孬孬] 本地模型加载成功')
+    log('[诊断] ✅ 模型加载成功')
     return true
   } catch (e) {
-    console.error('[孬孬] 本地模型加载失败:', e)
+    log('[诊断] ❌ 模型加载失败: ' + e.message)
+    log('[诊断] 堆栈: ' + e.stack)
     localModelReady = false
     return false
   } finally {
@@ -270,11 +311,15 @@ app.on('window-all-closed', () => {
 
 // ═══ 本地模型 IPC 接口 ═══
 ipcMain.handle('local-model:status', () => {
+  const dir = getModelDir()
+  const root = getModelsRootDir()
+  console.log('[孬孬][诊断] status检查 - modelDir:', dir, 'modelsRoot:', root)
   return {
     hasModel: hasBuiltInModel(),
     ready: localModelReady,
     loading: localModelLoading,
-    modelDir: getModelDir(),
+    modelDir: dir,
+    modelsRoot: root,
   }
 })
 

@@ -938,6 +938,42 @@
   })();
 </script>
 
+<section id="updates" style="max-width:880px;margin:64px auto 0;padding:0 28px 48px;">
+  <div style="border-top:1px solid var(--ink-line);padding-top:36px;">
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;">Chapter III &mdash; 版本小记</div>
+    <h2 style="font-family:var(--display);font-size:28px;font-weight:400;color:var(--ink);margin:0 0 28px;line-height:1.3;">
+      Update History
+      <span style="font-family:var(--sc);font-size:16px;color:var(--ink-dim);"> &mdash; 每一次小进步 &mdash;</span>
+    </h2>
+
+    <div style="border-left:2px solid var(--ink-line);padding-left:24px;">
+      <div style="margin-bottom:32px;">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--lavender);margin-bottom:6px;">2026-05-18 &nbsp; <span style="color:var(--gold);">v1.518.10</span></div>
+        <h3 style="font-family:var(--serif);font-size:17px;font-weight:500;color:var(--ink);margin:0 0 10px;">修复本地 AI 模型加载</h3>
+        <ul style="font-size:14px;line-height:1.7;color:var(--ink-dim);padding-left:20px;margin:0;">
+          <li>将 <code style="font-family:var(--mono);font-size:12px;background:var(--bg-2);padding:1px 5px;border-radius:3px;">require()</code> 改为 <code style="font-family:var(--mono);font-size:12px;background:var(--bg-2);padding:1px 5px;border-radius:3px;">await import()</code> 以兼容 ESM 模块</li>
+          <li>添加主进程诊断日志，通过 IPC 转发到前端显示</li>
+          <li>修复 <code style="font-family:var(--mono);font-size:12px;background:var(--bg-2);padding:1px 5px;border-radius:3px;">env.localModelPath</code> 配置</li>
+          <li>内置 Qwen1.5-0.5B-Chat 量化模型 (460MB, 完全离线)</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom:32px;">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--lavender);margin-bottom:6px;">2026-05-16 &nbsp; <span style="color:var(--gold);">v1.423.128</span></div>
+        <h3 style="font-family:var(--serif);font-size:17px;font-weight:500;color:var(--ink);margin:0 0 10px;">首个公开版本</h3>
+        <ul style="font-size:14px;line-height:1.7;color:var(--ink-dim);padding-left:20px;margin:0;">
+          <li>AI 对话 (兼容 Anthropic / OpenAI API)</li>
+          <li>番茄钟 (25/5 专注钟，柔和呼吸动画)</li>
+          <li>任务锚 (一句话把注意力拉回来)</li>
+          <li>定时签到 (轻柔提醒，不打扰)</li>
+          <li>ADHD 卡片 (100+ 张知识小卡片)</li>
+          <li>快捷短句 (一键发送温柔短句)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
 <footer>
   <div class="left">&copy; 2026 LAVENDER STUDIO</div>
   <div class="center">

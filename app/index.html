@@ -1182,8 +1182,18 @@ body.quiet-pet #pw.sleeping .pet-sway-wrap{ transform: rotate(-4deg) !important;
 
     <div class="seg-lbl" style="margin-top:22px">🤖 本地 AI 模型（免费离线）</div>
     <div id="local-model-status" class="hint" style="margin-top:4px;display:block">检测中…</div>
-    <button id="local-model-btn" style="margin-top:8px;width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--btn-bd);background:var(--btn-bg);font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--text-main);cursor:pointer;transition:all .15s;">🔁 加载本地 AI 模型</button>
-    <span class="hint" style="margin-top:6px;display:block">内置 Qwen1.5-0.5B-Chat 量化模型（约 460MB），安装后完全离线使用，无需 API Key。首次加载需要几秒钟初始化。</span>
+    <!-- 下载进度条（默认隐藏）-->
+    <div id="download-progress" style="display:none;margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span id="download-status" style="font-size:11px;font-weight:700;color:var(--text-main);">准备下载…</span>
+        <span id="download-pct" style="font-size:11px;font-weight:800;color:var(--accent);">0%</span>
+      </div>
+      <div style="width:100%;height:6px;background:rgba(200,185,245,.25);border-radius:3px;overflow:hidden;">
+        <div id="download-bar" style="width:0%;height:100%;background:linear-gradient(90deg,#b39ddb,#7c5cbf);border-radius:3px;transition:width .3s ease;"></div>
+      </div>
+    </div>
+    <button id="local-model-btn" style="margin-top:8px;width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--btn-bd);background:var(--btn-bg);font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--text-main);cursor:pointer;transition:all .15s;">📥 下载并加载模型</button>
+    <span class="hint" style="margin-top:6px;display:block">模型约 460MB，首次使用需下载。下载后完全离线使用，无需 API Key。</span>
 
     <button id="save-btn">保存并连接 ✦</button>
 
@@ -1594,8 +1604,8 @@ function smartFallback(input) {
   return rand(RESPONSE_POOLS._default);
 }
 
-/* ════════ 本地 AI 模型（内置到安装包，完全离线）═══ */
-// 模型文件已内置在 app/models/Xenova/Qwen1.5-0.5B-Chat/ 中
+/* ════════ 本地 AI 模型（按需下载，不内置到安装包）═══ */
+// 模型不在安装包中，用户点击按钮后从 HF 镜像下载（约 460MB）
 // 推理由 main 进程通过 @xenova/transformers (Node.js) 执行，通过 IPC 通信
 let localModelLoading = false;
 let localModelReady = false;
@@ -1649,10 +1659,10 @@ function hasLocalModel() {
 }
 
 function getLocalModelStatus() {
-  if (!localModelHasFiles) return '未安装（需重新打包）';
   if (localModelLoading) return '加载中…';
   if (localModelReady) return '✅ 已就绪';
-  return '⏸️ 已安装，点击加载';
+  if (localModelHasFiles) return '⏸️ 已下载，点击加载';
+  return '❌ 未下载（约 460MB）';
 }
 
 /* 100+ ADHD 知识卡片 */
@@ -1897,6 +1907,8 @@ async function updateStatus(){
     <span class="dot"></span>${hasKey()?'API Key 已配置':'未配置，使用本地模型'}
   </span>`;
   const modelStatus = document.getElementById('local-model-status');
+  const downloadProgress = document.getElementById('download-progress');
+  
   if (modelStatus) {
     modelStatus.textContent = '🤖 本地模型：' + getLocalModelStatus();
   }
@@ -1905,40 +1917,92 @@ async function updateStatus(){
     if (localModelLoading) {
       modelBtn.disabled = true;
       modelBtn.textContent = '⏳ 加载中…';
+      if (downloadProgress) downloadProgress.style.display = 'none';
     } else if (localModelReady) {
+      modelBtn.disabled = true;
       modelBtn.textContent = '✅ 模型已就绪';
       modelBtn.style.opacity = '0.6';
+      if (downloadProgress) downloadProgress.style.display = 'none';
     } else if (localModelHasFiles) {
       modelBtn.disabled = false;
       modelBtn.textContent = '🔁 加载本地模型';
       modelBtn.style.opacity = '1';
+      if (downloadProgress) downloadProgress.style.display = 'none';
     } else {
-      modelBtn.disabled = true;
-      modelBtn.textContent = '❌ 模型未内置';
-      modelBtn.style.opacity = '0.5';
+      // 模型未下载
+      modelBtn.disabled = false;
+      modelBtn.textContent = '📥 下载并加载模型';
+      modelBtn.style.opacity = '1';
+      if (downloadProgress) downloadProgress.style.display = 'none';
     }
   }
 }
 
-/* 本地模型加载按钮 */
+/* 本地模型加载/下载按钮 */
 document.getElementById('local-model-btn')?.addEventListener('click', async () => {
   const btn = document.getElementById('local-model-btn');
   const status = document.getElementById('local-model-status');
+  const downloadProgress = document.getElementById('download-progress');
+  const downloadStatus = document.getElementById('download-status');
+  const downloadPct = document.getElementById('download-pct');
+  const downloadBar = document.getElementById('download-bar');
+  
+  // 如果模型已经就绪，不需要操作
+  if (localModelReady) {
+    return;
+  }
+  
+  // 如果模型文件已存在，直接加载
+  if (localModelHasFiles && !localModelLoading) {
+    btn.disabled = true;
+    btn.textContent = '⏳ 加载中…';
+    if (status) status.textContent = '🤖 本地模型：加载中…';
+    const ok = await loadLocalModel((pct, msg) => {
+      if (status) status.textContent = '🤖 本地模型：' + (msg || '加载中…');
+      if (btn && pct !== null && pct >= 0) btn.textContent = '⏳ ' + pct + '%';
+    });
+    if (ok) {
+      addLog('本地 AI 模型加载完成 ✅');
+      updateStatus();
+    } else {
+      btn.disabled = false;
+      btn.textContent = '🔁 加载本地模型';
+      addLog('❌ 模型加载失败。详情请看日志或开发者工具控制台');
+      if (status) status.textContent = '🤖 本地模型：加载失败';
+    }
+    return;
+  }
+  
+  // 模型文件不存在，需要下载
   btn.disabled = true;
-  btn.textContent = '⏳ 加载中…';
-  if (status) status.textContent = '🤖 本地模型：加载中…';
-  const ok = await loadLocalModel((pct, msg) => {
-    if (status) status.textContent = '🤖 本地模型：' + (msg || '加载中…');
-    if (btn && pct !== null && pct >= 0) btn.textContent = '⏳ ' + pct + '%';
-  });
-  if (ok) {
-    addLog('本地 AI 模型加载完成 ✅');
-    updateStatus();
-  } else {
+  btn.textContent = '⏳ 下载中…';
+  if (status) status.textContent = '🤖 本地模型：准备下载…';
+  if (downloadProgress) downloadProgress.style.display = 'block';
+  if (downloadStatus) downloadStatus.textContent = '正在连接下载服务器…';
+  if (downloadBar) downloadBar.style.width = '0%';
+  if (downloadPct) downloadPct.textContent = '0%';
+  
+  addLog('开始下载本地 AI 模型…');
+  
+  try {
+    const ok = await window.petBridge.localModelDownload();
+    if (ok) {
+      addLog('本地 AI 模型下载并加载完成 ✅');
+      if (downloadProgress) downloadProgress.style.display = 'none';
+      updateStatus();
+    } else {
+      btn.disabled = false;
+      btn.textContent = '📥 下载并加载模型';
+      if (status) status.textContent = '🤖 本地模型：下载失败';
+      if (downloadProgress) downloadProgress.style.display = 'none';
+      addLog('❌ 模型下载失败。请检查网络连接后重试。');
+    }
+  } catch (e) {
     btn.disabled = false;
-    btn.textContent = '🔁 加载本地模型';
-    addLog('❌ 模型加载失败。详情请看日志或开发者工具控制台');
-    if (status) status.textContent = '🤖 本地模型：加载失败';
+    btn.textContent = '📥 下载并加载模型';
+    if (status) status.textContent = '🤖 本地模型：下载异常';
+    if (downloadProgress) downloadProgress.style.display = 'none';
+    addLog('❌ 模型下载异常: ' + (e?.message || e));
   }
 });
 segBtns.forEach(b=>b.addEventListener('click',()=>{if(!b.dataset.p)return;curP=b.dataset.p;syncSeg();}));
@@ -1994,6 +2058,23 @@ addLog('孬孬启动');
 // 接收主进程诊断日志
 if (window.petBridge && window.petBridge.onMainLog) {
   window.petBridge.onMainLog((msg) => addLog('[主进程] ' + msg));
+}
+
+// 接收模型下载进度
+if (window.petBridge && window.petBridge.onLocalModelProgress) {
+  window.petBridge.onLocalModelProgress((data) => {
+    const downloadProgress = document.getElementById('download-progress');
+    const downloadStatus = document.getElementById('download-status');
+    const downloadPct = document.getElementById('download-pct');
+    const downloadBar = document.getElementById('download-bar');
+    
+    if (downloadProgress) downloadProgress.style.display = 'block';
+    if (downloadStatus && data.msg) downloadStatus.textContent = data.msg;
+    if (downloadPct && data.pct !== undefined) downloadPct.textContent = data.pct + '%';
+    if (downloadBar && data.pct !== undefined) downloadBar.style.width = data.pct + '%';
+    
+    addLog('[下载] ' + (data.msg || '进度: ' + data.pct + '%'));
+  });
 }
 
 document.getElementById('save-btn').addEventListener('click',()=>{

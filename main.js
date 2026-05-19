@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain, screen, safeStorage } = require('electron')
+const { app, BrowserWindow, shell, ipcMain, screen, safeStorage } = require('electron/main')
 const path = require('path')
 const fs = require('fs')
 
@@ -9,18 +9,18 @@ function sendLogToRenderer(msg) {
   })
 }
 
-// ═══ 本地 AI 模型（内置到安装包，完全离线）═══
+// ═══ 本地 AI 模型（按需下载到 userData 目录）═══
 let localModelPipeline = null
 let localModelLoading = false
 let localModelReady = false
 const MODEL_NAME = 'Xenova/Qwen1.5-0.5B-Chat'
 
-// 兼容开发环境和生产环境的模型目录
+// 模型存放目录：优先 userData/models/（按需下载），兼容开发环境
 function getModelDir() {
-  // 生产环境：extraResources 把 app/models 复制到 resources/models/
-  const prodDir = path.join(process.resourcesPath, 'models', 'Xenova', 'Qwen1.5-0.5B-Chat')
-  if (fs.existsSync(path.join(prodDir, 'config.json'))) return prodDir
-  // 开发环境：直接从项目目录加载
+  // 生产/运行时：userData/models/（点击下载后存放的位置）
+  const userDataDir = path.join(app.getPath('userData'), 'models', 'Xenova', 'Qwen1.5-0.5B-Chat')
+  if (fs.existsSync(path.join(userDataDir, 'config.json'))) return userDataDir
+  // 开发环境：直接从项目目录加载（方便调试）
   const devDir = path.join(__dirname, 'app', 'models', 'Xenova', 'Qwen1.5-0.5B-Chat')
   if (fs.existsSync(path.join(devDir, 'config.json'))) return devDir
   return null
@@ -28,14 +28,15 @@ function getModelDir() {
 
 function getModelsRootDir() {
   // 返回模型所在的父目录（供 transformers.js env.localModelPath 使用）
-  const prodDir = path.join(process.resourcesPath, 'models')
-  if (fs.existsSync(path.join(prodDir, 'Xenova', 'Qwen1.5-0.5B-Chat', 'config.json'))) return prodDir
+  const userDataRoot = path.join(app.getPath('userData'), 'models')
+  if (fs.existsSync(path.join(userDataRoot, 'Xenova', 'Qwen1.5-0.5B-Chat', 'config.json'))) return userDataRoot
   const devDir = path.join(__dirname, 'app', 'models')
   if (fs.existsSync(path.join(devDir, 'Xenova', 'Qwen1.5-0.5B-Chat', 'config.json'))) return devDir
   return null
 }
 
-function hasBuiltInModel() {
+// 检查用户是否已下载模型
+function hasDownloadedModel() {
   const dir = getModelDir()
   return dir !== null && fs.existsSync(path.join(dir, 'onnx', 'decoder_model_merged_quantized.onnx'))
 }
@@ -45,19 +46,8 @@ async function loadLocalModel() {
   const modelDir = getModelDir()
   const modelsRoot = getModelsRootDir()
 
-  // ═══ 诊断日志 ═══
-  const log = (m) => { console.log(m); sendLogToRenderer(m) }
-  log('[诊断] process.resourcesPath: ' + process.resourcesPath)
-  log('[诊断] __dirname: ' + __dirname)
-  log('[诊断] modelDir: ' + modelDir)
-  log('[诊断] modelsRoot: ' + modelsRoot)
-  if (modelDir) {
-    log('[诊断] config.json exists: ' + fs.existsSync(path.join(modelDir, 'config.json')))
-    log('[诊断] onnx exists: ' + fs.existsSync(path.join(modelDir, 'onnx', 'decoder_model_merged_quantized.onnx')))
-  }
-
   if (!modelDir || !modelsRoot) {
-    log('[诊断] ❌ 模型目录未找到')
+    console.log('[孬孬] 模型目录未找到')
     return false
   }
   localModelLoading = true
@@ -68,21 +58,52 @@ async function loadLocalModel() {
     // 设置本地模型根目录，让 transformers.js 能正确找到本地模型
     env.localModelPath = modelsRoot
     env.allowRemoteModels = false
-    log('[诊断] env.localModelPath = ' + env.localModelPath)
-    log('[诊断] 开始加载模型: ' + MODEL_NAME)
+    console.log('[孬孬] 开始加载模型: ' + MODEL_NAME)
     localModelPipeline = await pipeline('text-generation', MODEL_NAME, {
       local_files_only: true,
     })
     localModelReady = true
-    log('[诊断] ✅ 模型加载成功')
+    console.log('[孬孬] ✅ 模型加载成功')
     return true
   } catch (e) {
-    log('[诊断] ❌ 模型加载失败: ' + e.message)
-    log('[诊断] 堆栈: ' + e.stack)
+    console.error('[孬孬] 模型加载失败:', e.message)
     localModelReady = false
     return false
   } finally {
     localModelLoading = false
+  }
+}
+
+// 下载模型到 userData 目录（点击下载按钮时调用）
+async function downloadLocalModel(progressCallback) {
+  const modelsRoot = path.join(app.getPath('userData'), 'models')
+  // 确保目录存在
+  if (!fs.existsSync(modelsRoot)) {
+    fs.mkdirSync(modelsRoot, { recursive: true })
+  }
+  try {
+    // @xenova/transformers v2+ 是 ESM，需要用动态 import() 加载
+    const transformers = await import('@xenova/transformers')
+    const { pipeline, env } = transformers
+    // 设置本地模型根目录
+    env.localModelPath = modelsRoot
+    env.allowRemoteModels = true  // 允许从 HuggingFace 下载
+    env.allowLocalModels = true
+
+    console.log('[孬孬] 开始下载模型:', MODEL_NAME)
+    // 下载并加载模型（会触发自动下载）
+    const p = await pipeline('text-generation', MODEL_NAME, {
+      progress_callback: (progress) => {
+        if (progressCallback) {
+          progressCallback(progress)
+        }
+      }
+    })
+    console.log('[孬孬] ✅ 模型下载并完成加载')
+    return { success: true, pipeline: p }
+  } catch (e) {
+    console.error('[孬孬] 模型下载失败:', e)
+    return { success: false, error: e.message }
   }
 }
 
@@ -120,8 +141,9 @@ async function runLocalInference(text) {
 }
 
 // Disable DPI scaling so window size = actual pixels
-app.commandLine.appendSwitch('high-dpi-support', '1')
-app.commandLine.appendSwitch('force-device-scale-factor', '1')
+// Note: commandLine calls moved inside app.whenReady() to avoid undefined errors
+// app.commandLine.appendSwitch('high-dpi-support', '1')
+// app.commandLine.appendSwitch('force-device-scale-factor', '1')
 
 let win
 const PRELOAD = path.join(__dirname, 'preload.js')
@@ -313,9 +335,8 @@ app.on('window-all-closed', () => {
 ipcMain.handle('local-model:status', () => {
   const dir = getModelDir()
   const root = getModelsRootDir()
-  console.log('[孬孬][诊断] status检查 - modelDir:', dir, 'modelsRoot:', root)
   return {
-    hasModel: hasBuiltInModel(),
+    hasModel: hasDownloadedModel(),
     ready: localModelReady,
     loading: localModelLoading,
     modelDir: dir,
@@ -329,4 +350,31 @@ ipcMain.handle('local-model:load', async () => {
 
 ipcMain.handle('local-model:inference', async (_event, text) => {
   return await runLocalInference(text)
+})
+
+// 处理下载请求（点击下载按钮时调用）
+ipcMain.handle('local-model:download', async (event) => {
+  if (localModelLoading) {
+    return { success: false, error: '正在下载中，请稍候' }
+  }
+  if (localModelReady) {
+    return { success: true, message: '模型已就绪' }
+  }
+
+  localModelLoading = true
+  // 发送进度更新到渲染进程
+  const sendProgress = (progress) => {
+    event.sender.send('local-model:progress', progress)
+  }
+
+  const result = await downloadLocalModel(sendProgress)
+  localModelLoading = false
+
+  if (result.success) {
+    localModelPipeline = result.pipeline
+    localModelReady = true
+    return { success: true }
+  } else {
+    return { success: false, error: result.error }
+  }
 })

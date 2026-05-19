@@ -13,10 +13,13 @@ contextBridge.exposeInMainWorld('petBridge', {
   // Encrypted API key storage (DPAPI / Keychain via Electron safeStorage)
   getSecret: () => ipcRenderer.invoke('secret:get'),
   setSecret: (v) => ipcRenderer.invoke('secret:set', v),
-  // Local AI model (built-in, fully offline)
+  // Local AI model (on-demand download)
   localModelStatus: () => ipcRenderer.invoke('local-model:status'),
+  localModelDownload: () => ipcRenderer.invoke('local-model:download'),
   localModelLoad:   () => ipcRenderer.invoke('local-model:load'),
   localModelInference: (text) => ipcRenderer.invoke('local-model:inference', text),
   // 主进程日志转发到前端
   onMainLog: (callback) => ipcRenderer.on('main-log', (_evt, msg) => callback(msg)),
+  // 下载进度监听
+  onLocalModelProgress: (callback) => ipcRenderer.on('local-model:progress', (_evt, data) => callback(data)),
 })
